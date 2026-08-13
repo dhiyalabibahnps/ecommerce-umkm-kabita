@@ -25,7 +25,7 @@ export const publicProductService = {
     return { data: response.data.data, meta: response.data.meta };
   },
 
-  async getBySlug(slug: number): Promise<SingleResponse<Product>> {
+  async getBySlug(slug: string): Promise<SingleResponse<Product>> {
     const response = await apiClient.get<SingleResponse<Product>>(`/public/products/${slug}`);
     return response.data;
   },

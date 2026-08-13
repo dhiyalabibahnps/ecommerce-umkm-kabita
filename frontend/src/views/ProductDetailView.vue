@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { publicProductService } from '@/services/publicProductService'
+import { getApiErrorMessage } from '@/services/apiError'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
 import type { Product } from '@/types'
@@ -9,7 +10,7 @@ import { computed, onMounted, ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const slug = computed(() => parseInt(route.params.slug as string) ?? '')
+const slug = computed(() => String(route.params.id ?? ''))
 const product = ref<Product | null>(null)
 const isLoadingGet = ref<boolean>(true)
 // const productStore = useProductStore()
@@ -28,7 +29,7 @@ async function getProduct() {
     toast.add({
       severity: 'error',
       summary: 'Gagal',
-      detail: `Gagal memuat detail barang`,
+      detail: getApiErrorMessage(error, 'Gagal memuat detail barang'),
       life: 3000,
     })
   } finally {
