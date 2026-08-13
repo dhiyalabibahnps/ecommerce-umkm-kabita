@@ -1,0 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
+
+/* ══════════ DESIGN SYSTEM TOKENS ══════════ */
+:root {
+  color-scheme: light;
+  color: #191b23;
+  background-color: #faf8ff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0em;
+
+  --color-background: #faf8ff;
+  --color-surface-0: #ffffff;
+  --color-surface-50: #f3f3fe;
+  --color-surface-100: #ededf9;
+  --color-surface-200: #e1e2ed;
+  --color-color: #191b23;
+  --color-color-secondary: #434655;
+  --color-primary: #004ac6;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-error: #ba1a1a;
+}
+
+@theme inline {
+  --p-surface-0: #ffffff;
+  --p-surface-50: #f3f3fe;
+  --p-surface-100: #ededf9;
+  --p-surface-200: #e1e2ed;
+  --p-primary-color: #004ac6;
+  --p-primary-50: #eff6ff;
+  --p-primary-100: #dbeafe;
+  --p-text-color: #191b23;
+  --p-text-muted-color: #434655;
+  --p-error-color: #ba1a1a;
+
+  --color-surface-0: var(--p-surface-0);
+  --color-surface-50: var(--p-surface-50);
+  --color-surface-100: var(--p-surface-100);
+  --color-surface-200: var(--p-surface-200);
+  --color-primary: var(--p-primary-color);
+  --color-primary-50: var(--p-primary-50);
+  --color-primary-100: var(--p-primary-100);
+  --color-color: var(--p-text-color);
+  --color-color-secondary: var(--p-text-muted-color);
+  --color-error: var(--p-error-color);
+}
+
+/* ══════════ CUSTOM UTILITIES (kelas legacy biar kode lama tetap jalan) ══════════ */
+@utility flex-column { flex-direction: column; }
+@utility align-items-center { align-items: center; }
+@utility justify-content-between { justify-content: space-between; }
+@utility justify-content-center { justify-content: center; }
+@utility flex-grow-1 { flex-grow: 1; }
+@utility border-round { border-radius: 0.5rem; }
+@utility border-round-sm { border-radius: 0.25rem; }
+@utility border-round-xl { border-radius: 1rem; }
+@utility border-1 { border-width: 1px; border-style: solid; }
+@utility border-bottom-1 { border-bottom: 1px solid; }
+@utility border-top-1 { border-top: 1px solid; }
+@utility p-error { color: var(--color-error); }
+@utility z-1 { z-index: 1; }
+
+/* ══════════ BASE ══════════ */
+@layer base {
+  html {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--color-background);
+    color: var(--color-color);
+    font-family: inherit;
+    line-height: 1.5;
+  }
+  button { cursor: pointer; }
+  .bg-slate-50 { background-color: var(--color-background); }
+}
