@@ -73,18 +73,22 @@ const changeImage = (index: number) => {
 
 const handleAddToCart = async () => {
   if (!product.value) return
-  await cartStore.addToCart(product.value, quantity.value)
+  const success = await cartStore.addToCart(product.value, quantity.value)
   toast.add({
-    severity: 'success',
-    summary: 'Berhasil',
-    detail: `${product.value.name} berhasil ditambahkan ke keranjang`,
+    severity: success ? 'success' : 'error',
+    summary: success ? 'Berhasil' : 'Gagal',
+    detail: success ? `${product.value.name} berhasil ditambahkan ke keranjang` : (cartStore.error || 'Gagal menambahkan produk'),
     life: 3000,
   })
 }
 
 const handleBuyNow = async () => {
   if (!product.value) return
-  await cartStore.addToCart(product.value, quantity.value)
+  const success = await cartStore.addToCart(product.value, quantity.value)
+  if (!success) {
+    toast.add({ severity: 'error', summary: 'Gagal', detail: cartStore.error || 'Gagal menambahkan produk', life: 3000 })
+    return
+  }
   toast.add({
     severity: 'success',
     summary: 'Siap checkout',

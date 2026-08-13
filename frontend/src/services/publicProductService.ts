@@ -20,6 +20,7 @@ export const publicProductService = {
     max_price?: number;
     sort?: 'newest' | 'price_asc' | 'price_desc';
     per_page?: number;
+    page?: number;
   }): Promise<{ data: Product[]; meta: PaginationMeta }> {
     const response = await apiClient.get('/public/products', { params: filters });
     return { data: response.data.data, meta: response.data.meta };
