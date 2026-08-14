@@ -2,7 +2,7 @@
   <div class="min-h-screen max-w-150 mx-auto bg-gray-50 flex flex-col justify-center -my-32 sm:px-6 lg:px-8">
 
     <div class="mt-8 sm:mx-auto w-full">
-      <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">H
+      <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <div class="mb-12">
           <h1 class="text-center text-3xl font-bold text-primary-600">Kabita</h1>
           <h2 class="mt-6 text-center text-2xl font-bold text-gray-900">
@@ -85,24 +85,6 @@
             <Button type="submit" label="Masuk" :loading="isLoading" class="w-full" />
           </div>
 
-          <!-- Divider -->
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-gray-300" />
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="bg-white px-2 text-gray-500">atau masuk dengan</span>
-            </div>
-          </div>
-
-          <!-- Social Login (Placeholder) -->
-          <div class="grid grid-cols-2 gap-3">
-            <Button label="Google" icon="pi pi-google" severity="secondary" outlined class="w-full"
-              @click="socialLogin('google')" />
-            <Button label="Facebook" icon="pi pi-facebook" severity="secondary" outlined class="w-full"
-              @click="socialLogin('facebook')" />
-          </div>
-
           <!-- Register Link -->
           <div class="text-center">
             <p class="text-sm text-gray-600">
@@ -167,7 +149,7 @@ async function handleLogin() {
       errors.value = error.response.data.errors;
     } else {
       const message = error.response?.data?.message || 'Terjadi kesalahan';
-      
+
       // Cek apakah error karena email belum terverifikasi
       if (message.toLowerCase().includes('verif')) {
         verificationNotice.value = message;
