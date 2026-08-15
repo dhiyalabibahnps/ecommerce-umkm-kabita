@@ -72,7 +72,7 @@ async function handleLogout() {
           <router-link to="/" class="text-xl font-bold text-primary">Kabita</router-link>
           <nav class="flex items-center gap-6 text-sm font-medium text-slate-700">
             <router-link to="/" class="no-underline hover:text-slate-900">Beranda</router-link>
-            <router-link to="/produk" class="no-underline hover:text-slate-900">Kategori</router-link>
+            <router-link to="/produk" class="no-underline hover:text-slate-900">Produk</router-link>
             <router-link to="/tentang-kami" class="no-underline hover:text-slate-900">Tentang Kami</router-link>
             <router-link to="/bantuan" class="no-underline hover:text-slate-900">Bantuan</router-link>
           </nav>
@@ -167,7 +167,7 @@ async function handleLogout() {
           <router-link to="/" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
             @click="closeMenu">Beranda</router-link>
           <router-link to="/produk" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
-            @click="closeMenu">Kategori & Produk</router-link>
+            @click="closeMenu">Produk</router-link>
           <router-link to="/tentang-kami" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
             @click="closeMenu">Tentang Kami</router-link>
           <router-link to="/bantuan" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"

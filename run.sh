@@ -45,8 +45,8 @@ log "Menjalankan migrasi MariaDB..."
 php artisan migrate --force
 
 if [[ "$DEMO_SEED" == "1" ]]; then
-  log "Mengisi data demo backend..."
-  php artisan db:seed --force
+  log "Mengisi data demo lengkap Kabita..."
+  php artisan db:seed --class=KabitaFullDataSeeder --force
 fi
 
 log "Membersihkan cache Laravel..."

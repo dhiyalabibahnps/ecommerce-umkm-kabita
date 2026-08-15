@@ -53,8 +53,8 @@ async function decreaseQuantity() {
           <Button icon="pi pi-plus" text rounded size="small" aria-label="Tambah jumlah"
             :disabled="cartStore.actionLoading" @click="handleAddToCart" />
         </div>
-        <Button v-else icon="pi pi-plus" :loading="cartStore.actionLoading" :disabled="cartStore.actionLoading" class="p-button-rounded p-button-primary" aria-label="Tambah ke Keranjang"
-          @click="handleAddToCart" />
+        <Button v-else icon="pi pi-plus" :loading="cartStore.actionLoading" :disabled="cartStore.actionLoading"
+          class="p-button-rounded p-button-primary" aria-label="Tambah ke Keranjang" @click="handleAddToCart" />
       </div>
     </div>
   </div>

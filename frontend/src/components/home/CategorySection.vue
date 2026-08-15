@@ -18,10 +18,10 @@ onMounted(() => categoryStore.load())
           Semua</router-link>
       </div>
 
-      <div class="flex gap-4 overflow-x-auto pb-2">
+      <div class="flex gap-x-2 gap-y-1 overflow-x-auto pb-2">
         <div v-for="category in categoryStore.categories" :key="category.id" class="min-w-20 shrink-0 px-2">
           <router-link :to="`/kategori/${category.slug}`"
-            class="flex flex-col items-center gap-3 rounded-[1.5rem] border border-[#e1e2ed] bg-white px-4 py-4 text-center no-underline shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
+            class="w-48 flex flex-col items-center gap-3 rounded-[1.5rem] border border-[#e1e2ed] bg-white px-4 py-4 text-center no-underline shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
             <span
               class="flex h-16 w-16 items-center justify-center rounded-[1rem] bg-surface-container text-[#191b23] text-2xl">
               <span>{{ category.icon || '🏷️' }}</span>

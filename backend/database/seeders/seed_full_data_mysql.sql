@@ -26,21 +26,21 @@ REPLACE INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `r
 -- 2. SHOPS
 -- ============================================================
 REPLACE INTO `shops` (`id`, `seller_id`, `name`, `slug`, `description`, `logo`, `status`, `verified_by`, `verified_at`, `rejection_reason`, `phone`, `address`, `banner`, `created_at`, `updated_at`) VALUES
-(1, 2, 'Warung Makan Siti', 'warung-makan-siti', 'Warung makan rumahan dengan masakan tradisional khas Kabupaten A.', 'shops/siti-logo.png', 'verified', 1, '2026-01-02 08:00:00', NULL, '081234500002', 'Jl. Pasar No.2, Kabupaten A', NULL, '2026-01-02 00:00:00', '2026-01-02 08:00:00'),
-(2, 3, 'Budi Craft', 'budi-craft', 'Produk kerajinan tangan dari bahan daur ulang dan kayu.', 'shops/budi-logo.png', 'verified', 1, '2026-01-03 08:00:00', NULL, '081234500003', 'Jl. Melati No.3, Kabupaten A', NULL, '2026-01-03 00:00:00', '2026-01-03 08:00:00'),
-(3, 4, 'Rina Fashion', 'rina-fashion', 'Toko fashion lokal dengan desain simple dan elegan.', 'shops/rina-logo.png', 'verified', 1, '2026-01-04 08:00:00', NULL, '081234500004', 'Jl. Mawar No.4, Kabupaten A', NULL, '2026-01-04 00:00:00', '2026-01-04 08:00:00'),
-(4, 2, 'Siti Snack Box', 'siti-snack-box', 'Snack box untuk acara dan oleh-oleh khas daerah.', 'shops/siti-snack-logo.png', 'verified', 1, '2026-01-05 08:00:00', NULL, '081234500002', 'Jl. Pasar No.2, Kabupaten A', NULL, '2026-01-05 00:00:00', '2026-01-05 08:00:00');
+(1, 2, 'Warung Makan Siti', 'warung-makan-siti', 'Warung makan rumahan dengan masakan tradisional khas Kabupaten A.', 'https://via.placeholder.com/150/FF6B6B/FFFFFF?text=Warung+Makan+Siti', 'verified', 1, '2026-01-02 08:00:00', NULL, '081234500002', 'Jl. Pasar No.2, Kabupaten A', NULL, '2026-01-02 00:00:00', '2026-01-02 08:00:00'),
+(2, 3, 'Budi Craft', 'budi-craft', 'Produk kerajinan tangan dari bahan daur ulang dan kayu.', 'https://via.placeholder.com/150/4ECDC4/FFFFFF?text=Budi+Craft', 'verified', 1, '2026-01-03 08:00:00', NULL, '081234500003', 'Jl. Melati No.3, Kabupaten A', NULL, '2026-01-03 00:00:00', '2026-01-03 08:00:00'),
+(3, 4, 'Rina Fashion', 'rina-fashion', 'Toko fashion lokal dengan desain simple dan elegan.', 'https://via.placeholder.com/150/FFE66D/333333?text=Rina+Fashion', 'verified', 1, '2026-01-04 08:00:00', NULL, '081234500004', 'Jl. Mawar No.4, Kabupaten A', NULL, '2026-01-04 00:00:00', '2026-01-04 08:00:00'),
+(4, 2, 'Siti Snack Box', 'siti-snack-box', 'Snack box untuk acara dan oleh-oleh khas daerah.', 'https://via.placeholder.com/150/95E1D3/333333?text=Siti+Snack+Box', 'verified', 1, '2026-01-05 08:00:00', NULL, '081234500002', 'Jl. Pasar No.2, Kabupaten A', NULL, '2026-01-05 00:00:00', '2026-01-05 08:00:00');
 
 -- ============================================================
 -- 3. CATEGORIES
 -- ============================================================
 REPLACE INTO `categories` (`id`, `name`, `slug`, `icon`, `description`, `created_at`, `updated_at`) VALUES
-(1, 'Makanan', 'makanan', 'utensils', 'Kategori produk makanan dan camilan.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
-(2, 'Minuman', 'minuman', 'coffee', 'Kategori produk minuman segar dan kemasan.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
-(3, 'Fashion', 'fashion', 'shirt', 'Kategori produk fashion dan pakaian.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
-(4, 'Kerajinan', 'kerajinan', 'hammer', 'Kategori produk kerajinan tangan.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
-(5, 'Kecantikan', 'kecantikan', 'sparkles', 'Kategori produk kecantikan dan perawatan.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
-(6, 'Oleh-oleh', 'oleh-oleh', 'gift', 'Kategori produk oleh-oleh khas daerah.', '2026-01-01 00:00:00', '2026-01-01 00:00:00');
+(1, 'Makanan', 'makanan', '🍴', 'Kategori produk makanan dan camilan.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
+(2, 'Minuman', 'minuman', '☕', 'Kategori produk minuman segar dan kemasan.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
+(3, 'Fashion', 'fashion', '👕', 'Kategori produk fashion dan pakaian.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
+(4, 'Kerajinan', 'kerajinan', '🔨', 'Kategori produk kerajinan tangan.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
+(5, 'Kecantikan', 'kecantikan', '✨', 'Kategori produk kecantikan dan perawatan.', '2026-01-01 00:00:00', '2026-01-01 00:00:00'),
+(6, 'Oleh-oleh', 'oleh-oleh', '🎁', 'Kategori produk oleh-oleh khas daerah.', '2026-01-01 00:00:00', '2026-01-01 00:00:00');
 
 -- ============================================================
 -- 4. PRODUCTS
@@ -65,6 +65,28 @@ REPLACE INTO `products` (`id`, `shop_id`, `category_id`, `name`, `slug`, `descri
 -- Shop 4: Siti Snack Box
 (11, 4, 6, 'Snack Box Kue Kering', 'snack-box-kue-kering', 'Kue kering dalam snack box.', 60000.00, 35000.00, 30, 'approved', 700.00, '2026-01-05 09:00:00', NULL, NULL, '2026-01-05 00:00:00', '2026-01-05 09:00:00'),
 (12, 4, 6, 'Dodol Garut Premium', 'dodol-garut-premium', 'Dodol garut khas dengan kemasan premium.', 45000.00, 25000.00, 35, 'approved', 500.00, '2026-01-05 09:00:00', NULL, NULL, '2026-01-05 00:00:00', '2026-01-05 09:00:00');
+
+-- ============================================================
+-- 4.1 PRODUCT IMAGES
+-- ============================================================
+REPLACE INTO `product_images` (`id`, `product_id`, `image_path`, `order_column`, `created_at`, `updated_at`) VALUES
+-- Shop 1: Warung Makan Siti
+(1, 1, 'https://via.placeholder.com/400x300/FF6B6B/FFFFFF?text=Nasi+Goreng+Spesial', 1, '2026-01-02 00:00:00', '2026-01-02 00:00:00'),
+(2, 1, 'https://via.placeholder.com/400x300/FF8E8E/FFFFFF?text=Nasi+Goreng+2', 2, '2026-01-02 00:00:00', '2026-01-02 00:00:00'),
+(3, 2, 'https://via.placeholder.com/400x300/4ECDC4/FFFFFF?text=Mie+Goreng+Jawa', 1, '2026-01-02 00:00:00', '2026-01-02 00:00:00'),
+(4, 3, 'https://via.placeholder.com/400x300/95E1D3/333333?text=Es+Jeruk+Peras', 1, '2026-01-02 00:00:00', '2026-01-02 00:00:00'),
+(5, 4, 'https://via.placeholder.com/400x300/FFE66D/333333?text=Snack+Box+Nasi+Tumpeng+Mini', 1, '2026-01-02 00:00:00', '2026-01-02 00:00:00'),
+-- Shop 2: Budi Craft
+(6, 5, 'https://via.placeholder.com/400x300/FF6B6B/FFFFFF?text=Tas+Anyaman+Rotan', 1, '2026-01-03 00:00:00', '2026-01-03 00:00:00'),
+(7, 6, 'https://via.placeholder.com/400x300/4ECDC4/FFFFFF?text=Frame+Foto+Kayu+Jati', 1, '2026-01-03 00:00:00', '2026-01-03 00:00:00'),
+(8, 7, 'https://via.placeholder.com/400x300/95E1D3/333333?text=Cindera+Mata+Wooden', 1, '2026-01-03 00:00:00', '2026-01-03 00:00:00'),
+-- Shop 3: Rina Fashion
+(9, 8, 'https://via.placeholder.com/400x300/FFE66D/333333?text=Kemeja+Batik+Wanita', 1, '2026-01-04 00:00:00', '2026-01-04 00:00:00'),
+(10, 9, 'https://via.placeholder.com/400x300/FF6B6B/FFFFFF?text=Rok+Plisket+Premium', 1, '2026-01-04 00:00:00', '2026-01-04 00:00:00'),
+(11, 10, 'https://via.placeholder.com/400x300/4ECDC4/FFFFFF?text=Tas+Selempang+Kanvas', 1, '2026-01-04 00:00:00', '2026-01-04 00:00:00'),
+-- Shop 4: Siti Snack Box
+(12, 11, 'https://via.placeholder.com/400x300/95E1D3/333333?text=Snack+Box+Kue+Kering', 1, '2026-01-05 00:00:00', '2026-01-05 00:00:00'),
+(13, 12, 'https://via.placeholder.com/400x300/FFE66D/333333?text=Dodol+Garut+Premium', 1, '2026-01-05 00:00:00', '2026-01-05 00:00:00');
 
 -- ============================================================
 -- 5. CARTS
