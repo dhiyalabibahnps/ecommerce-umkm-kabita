@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { buyerOrderService } from '@/services/buyerOrderService'
 import { getApiErrorMessage } from '@/services/apiError'
+import { buyerOrderService } from '@/services/buyerOrderService'
 import type { Order, OrderStatus } from '@/types'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -47,13 +47,13 @@ const formatDate = (date: string) => new Date(date).toLocaleDateString('id-ID', 
 })
 
 const getSeverity = (status: OrderStatus) => ({
-  pending: 'warn', processing: 'info', shipped: 'info', delivered: 'success',
+  awaiting_verification: 'warn', processing: 'info', packed: 'info', shipped: 'info', cod_meeting: 'warn',
   completed: 'success', cancelled: 'danger',
 }[status] || 'secondary')
 
 const getStatusLabel = (status: OrderStatus) => ({
-  pending: 'Menunggu pembayaran', processing: 'Diproses', shipped: 'Dikirim',
-  delivered: 'Selesai', completed: 'Selesai', cancelled: 'Dibatalkan',
+  awaiting_verification: 'Pembayaran Sedang Diverifikasi', processing: 'Dikonfirmasi', packed: 'Dikemas', shipped: 'Dikirim', cod_meeting: 'Ketemuan',
+  completed: 'Pesanan Selesai', cancelled: 'Dibatalkan',
 }[status] || status)
 
 onMounted(loadOrders)
@@ -63,12 +63,13 @@ onMounted(loadOrders)
   <section class="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
     <header class="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-xl font-bold text-slate-900">Pesanan Saya</h1>
-        <p class="mt-1 text-sm text-slate-500">Pantau status pesanan dan riwayat belanja Anda.</p>
+        <h1 class="text-lg font-bold text-slate-900">Pesanan Saya</h1>
+        <p class="mt-1 text-xs text-slate-500">Pantau status pesanan dan riwayat belanja Anda.</p>
       </div>
       <div class="relative w-full sm:w-72">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <InputText v-model="searchQuery" placeholder="Cari nomor pesanan atau toko..." class="w-full rounded-xl! py-2.5! pl-9! text-sm!" />
+        <InputText v-model="searchQuery" placeholder="Cari nomor pesanan atau toko..."
+          class="w-full rounded-xl! py-2.5! pl-9! text-sm!" />
       </div>
     </header>
 
@@ -84,10 +85,12 @@ onMounted(loadOrders)
       <i class="pi pi-receipt text-4xl text-slate-300"></i>
       <h2 class="mt-4 font-bold text-slate-800">Pesanan tidak ditemukan</h2>
       <p class="mt-1 text-sm text-slate-500">Coba kata kunci lain atau mulai belanja produk UMKM.</p>
-      <Button label="Mulai belanja" icon="pi pi-shopping-bag" class="mt-5 rounded-xl!" @click="router.push('/produk')" />
+      <Button label="Mulai belanja" icon="pi pi-shopping-bag" class="mt-5 rounded-xl!"
+        @click="router.push('/produk')" />
     </div>
     <div v-else class="mt-5 space-y-4">
-      <article v-for="order in filteredOrders" :key="order.id" class="rounded-2xl border border-slate-100 p-4 transition hover:border-blue-200 hover:shadow-sm">
+      <article v-for="order in filteredOrders" :key="order.id"
+        class="rounded-2xl border border-slate-100 p-4 transition hover:border-blue-200 hover:shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 text-xs">
           <div class="flex flex-wrap items-center gap-2 text-slate-500">
             <span class="font-bold text-slate-800">{{ order.shop?.name || 'Toko Kabita' }}</span>
@@ -97,16 +100,23 @@ onMounted(loadOrders)
           <Tag :value="getStatusLabel(order.status)" :severity="getSeverity(order.status)" />
         </div>
         <div v-for="item in order.items" :key="item.id" class="flex min-w-0 items-center gap-3 py-4">
-          <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-[10px] text-slate-400">Produk</div>
+          <div
+            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-[10px] text-slate-400">
+            Produk</div>
           <div class="min-w-0 flex-1">
             <h3 class="truncate text-sm font-semibold text-slate-800">{{ item.product?.name || 'Produk' }}</h3>
-            <p class="mt-1 text-xs text-slate-500">{{ item.quantity }} barang × {{ formatCurrency(item.price_snapshot) }}</p>
+            <p class="mt-1 text-xs text-slate-500">{{ item.quantity }} barang × {{ formatCurrency(item.price_snapshot)
+              }}</p>
           </div>
-          <span class="shrink-0 text-sm font-bold text-slate-800">{{ formatCurrency(Number(item.price_snapshot) * item.quantity) }}</span>
+          <span class="shrink-0 text-sm font-bold text-slate-800">{{ formatCurrency(Number(item.price_snapshot) *
+            item.quantity) }}</span>
         </div>
-        <footer class="flex flex-col gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
-          <span class="text-sm text-slate-500">Total <strong class="text-slate-900">{{ formatCurrency(order.total_amount) }}</strong></span>
-          <Button label="Lihat detail" icon="pi pi-arrow-right" iconPos="right" text class="rounded-xl!" @click="router.push(`/order-detail?id=${order.id}`)" />
+        <footer
+          class="flex flex-col gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
+          <span class="text-sm text-slate-500">Total <strong class="text-slate-900">{{
+            formatCurrency(order.total_amount) }}</strong></span>
+          <Button label="Lihat detail" icon="pi pi-arrow-right" iconPos="right" text class="rounded-xl!"
+            @click="router.push(`/order-detail?id=${order.id}`)" />
         </footer>
       </article>
     </div>

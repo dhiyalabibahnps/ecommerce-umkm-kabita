@@ -38,6 +38,7 @@ class User extends Authenticatable
         'role',      // Tambahan: admin, seller, buyer
         'phone',     // Tambahan: nomor WhatsApp
         'address',   // Tambahan: alamat user
+        'photo',     // Tambahan: foto profil
         'status',    // Tambahan: active, inactive, suspended
         'proof_image',
         'verified_by',

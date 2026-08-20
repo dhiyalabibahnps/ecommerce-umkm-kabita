@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function () {
   Route::middleware(['auth:sanctum', 'sanitize'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::put('/me/profile', [AuthController::class, 'updateProfile'])->name('me.profile.update');
   });
 
   // Shop Routes
@@ -84,6 +85,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\Buyer\CodLocationController::class, 'index'])->name('locations.index');
     Route::post('/', [\App\Http\Controllers\Api\Buyer\CodLocationController::class, 'store'])->name('locations.store');
     Route::put('/{codLocation}', [\App\Http\Controllers\Api\Buyer\CodLocationController::class, 'update'])->name('locations.update');
+    Route::patch('/{codLocation}/default', [\App\Http\Controllers\Api\Buyer\CodLocationController::class, 'setDefault'])->name('locations.default');
     Route::delete('/{codLocation}', [\App\Http\Controllers\Api\Buyer\CodLocationController::class, 'destroy'])->name('locations.destroy');
   });
 
@@ -169,7 +171,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\Seller\OrderController::class, 'index'])->name('seller.orders.index');
     Route::get('/{order}', [\App\Http\Controllers\Api\Seller\OrderController::class, 'show'])->name('seller.orders.show');
     Route::patch('/{order}/process', [\App\Http\Controllers\Api\Seller\OrderController::class, 'process'])->name('seller.orders.process');
+    Route::patch('/{order}/pack', [\App\Http\Controllers\Api\Seller\OrderController::class, 'pack'])->name('seller.orders.pack');
     Route::patch('/{order}/ship', [\App\Http\Controllers\Api\Seller\OrderController::class, 'ship'])->name('seller.orders.ship');
+    Route::patch('/{order}/cod-complete', [\App\Http\Controllers\Api\Seller\OrderController::class, 'codComplete'])->name('seller.orders.cod-complete');
   });
 
   // Analytics Routes (Seller only)

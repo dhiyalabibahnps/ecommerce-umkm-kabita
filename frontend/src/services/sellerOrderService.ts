@@ -27,4 +27,14 @@ export const sellerOrderService = {
     const response = await apiClient.patch(`/seller/orders/${orderId}/ship`, data);
     return response.data.data;
   },
+
+  async pack(orderId: number): Promise<Order> {
+    const response = await apiClient.patch(`/seller/orders/${orderId}/pack`);
+    return response.data.data;
+  },
+
+  async codComplete(orderId: number): Promise<Order> {
+    const response = await apiClient.patch(`/seller/orders/${orderId}/cod-complete`);
+    return response.data.data;
+  },
 };

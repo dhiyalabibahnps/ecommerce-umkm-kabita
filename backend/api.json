@@ -3286,7 +3286,7 @@
                     "status": {
                         "$ref": "#/components/schemas/UserStatus"
                     },
-                    "proof_image": {
+                    "photo": {
                         "type": [
                             "string",
                             "null"
@@ -3329,7 +3329,7 @@
                     "phone",
                     "address",
                     "status",
-                    "proof_image",
+                    "photo",
                     "verified_by",
                     "verified_at",
                     "created_at",

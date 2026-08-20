@@ -30,7 +30,7 @@ defineProps<{
       </div>
 
       <div v-if="shippingMethod === 'cod'" class="mt-3">
-        <span class="text-gray-400 text-[11px] block mb-1">Lokasi Pertemuan</span>
+        <span class="text-gray-400 text-[11px] block mb-1">Informasi Ketemuan</span>
         <div
           class="w-full h-28 bg-slate-100 rounded-lg border border-slate-200 flex flex-col items-center justify-center text-slate-400 gap-1">
           <i class="pi pi-map-marker text-red-500 text-xl"></i>

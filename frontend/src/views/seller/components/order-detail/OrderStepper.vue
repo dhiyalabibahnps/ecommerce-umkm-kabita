@@ -15,7 +15,6 @@ interface StepItem {
 }
 
 const steps = computed<StepItem[]>(() => {
-  // Mode Dibatalkan / Ditolak
   if (props.status === 'cancelled') {
     return [
       { key: 'dipesan', label: 'Dipesan', icon: 'pi pi-shopping-cart' },
@@ -24,18 +23,17 @@ const steps = computed<StepItem[]>(() => {
     ];
   }
 
-  // Mode COD
   if (props.shippingMethod === 'cod') {
     return [
       { key: 'dipesan', label: 'Dipesan', icon: 'pi pi-shopping-cart' },
       { key: 'dikonfirmasi', label: 'Dikonfirmasi', icon: 'pi pi-check-circle' },
       { key: 'dikemas', label: 'Dikemas', icon: 'pi pi-box' },
-      { key: 'dikirims', label: 'Menuju Titik Temu', icon: 'pi pi-truck' },
+      { key: 'dikirim', label: 'Menuju Titik Temu', icon: 'pi pi-truck' },
+      { key: 'ketemuan', label: 'Ketemuan', icon: 'pi pi-map-marker' },
       { key: 'selesai', label: 'Selesai', icon: 'pi pi-verified' },
     ];
   }
 
-  // Mode Kurir Standar
   return [
     { key: 'dipesan', label: 'Dipesan', icon: 'pi pi-shopping-cart' },
     { key: 'verifikasi', label: props.isVerified ? 'Dikonfirmasi' : 'Verifikasi', icon: 'pi pi-check-circle' },
@@ -48,11 +46,12 @@ const steps = computed<StepItem[]>(() => {
 const currentStepIndex = computed(() => {
   if (props.status === 'cancelled') return 2;
   switch (props.status) {
-    case 'pending': return props.isVerified ? 1 : 0;
-    case 'processing': return 2;
+    case 'awaiting_verification': return props.isVerified ? 1 : 0;
+    case 'processing': return 1;
+    case 'packed': return 2;
     case 'shipped': return 3;
-    case 'delivered':
-    case 'completed': return 4;
+    case 'cod_meeting': return props.shippingMethod === 'cod' ? 4 : 3;
+    case 'completed': return props.shippingMethod === 'cod' ? 5 : 4;
     default: return 0;
   }
 });

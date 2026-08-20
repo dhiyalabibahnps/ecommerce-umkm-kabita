@@ -1,8 +1,6 @@
 <script setup lang="ts">
-// @ts-ignore
-import MapPicker from '@/components/maps/MapPicker.vue'
 import { locationService } from '@/services/locationService'
-import type { CodLocation, StoreCodLocationRequest } from '@/types'
+import type { CodLocation, StoreCodLocationRequest, UpdateLocationRequest } from '@/types'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
@@ -16,7 +14,7 @@ const toast = useToast()
 const props = defineProps<{
   visible: boolean
   mode: 'add' | 'edit'
-  codLocation?: CodLocation | null
+  location?: CodLocation | null
 }>()
 
 const emit = defineEmits<{
@@ -35,41 +33,18 @@ const form = ref<StoreCodLocationRequest>({
   is_default: false,
 })
 
-const mapLocation = computed({
-  get: () => {
-    const lat = form.value.latitude ? Number(form.value.latitude) : undefined
-    const lng = form.value.longitude ? Number(form.value.longitude) : undefined
-    if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) return null
-    return {
-      latitude: lat,
-      longitude: lng,
-      address: form.value.address || '',
-    }
-  },
-  set: (val) => {
-    if (val) {
-      form.value.latitude = String(val.latitude)
-      form.value.longitude = String(val.longitude)
-      form.value.address = val.address
-    } else {
-      form.value.latitude = null
-      form.value.longitude = null
-    }
-  },
-})
-
 watch(
   () => props.visible,
   (val) => {
     if (!val) return
-    if (props.mode === 'edit' && props.codLocation) {
+    if (props.mode === 'edit' && props.location) {
       form.value = {
-        name: props.codLocation.name,
-        address: props.codLocation.address,
-        phone: props.codLocation.phone,
-        latitude: props.codLocation.latitude,
-        longitude: props.codLocation.longitude,
-        is_default: props.codLocation.is_default ?? false,
+        name: props.location.name,
+        address: props.location.address,
+        phone: props.location.phone,
+        latitude: props.location.latitude,
+        longitude: props.location.longitude,
+        is_default: props.location.is_default ?? false,
       }
     } else {
       form.value = {
@@ -84,6 +59,8 @@ watch(
   }
 )
 
+const title = computed(() => (props.mode === 'add' ? 'Tambah Alamat' : 'Edit Alamat'))
+
 const handleSave = async () => {
   if (!form.value.name || !form.value.phone || !form.value.address) {
     toast.add({ severity: 'error', summary: 'Gagal', detail: 'Nama, telepon, dan alamat wajib diisi.', life: 3000 })
@@ -94,15 +71,20 @@ const handleSave = async () => {
   try {
     if (props.mode === 'add') {
       await locationService.create(form.value)
-    } else if (props.mode === 'edit' && props.codLocation?.id) {
-      await locationService.update(props.codLocation.id, form.value)
+      toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Alamat berhasil ditambahkan.', life: 3000 })
+    } else if (props.mode === 'edit' && props.location?.id) {
+      const payload: UpdateLocationRequest = {
+        name: form.value.name,
+        address: form.value.address,
+        phone: form.value.phone,
+        latitude: form.value.latitude,
+        longitude: form.value.longitude,
+        is_default: form.value.is_default,
+      }
+      await locationService.update(props.location.id, payload)
+      toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Alamat berhasil diperbarui.', life: 3000 })
     }
-    toast.add({
-      severity: 'success',
-      summary: 'Berhasil',
-      detail: props.mode === 'add' ? 'Alamat COD berhasil ditambahkan.' : 'Alamat COD berhasil diperbarui.',
-      life: 3000,
-    })
+
     emit('saved')
     emit('update:visible', false)
   } catch (error) {
@@ -114,9 +96,8 @@ const handleSave = async () => {
 </script>
 
 <template>
-  <Dialog :visible="visible" @update:visible="emit('update:visible', $event)" modal
-    :header="mode === 'add' ? 'Tambah Alamat COD' : 'Edit Alamat COD'" :style="{ width: '90%', maxWidth: '560px' }"
-    class="rounded-2xl">
+  <Dialog :visible="visible" @update:visible="emit('update:visible', $event)" modal :header="title"
+    :style="{ width: '90%', maxWidth: '560px' }" class="rounded-2xl">
     <div class="space-y-4 py-2">
       <div class="space-y-1">
         <label class="text-xs font-semibold text-slate-700">Nama Penerima</label>
@@ -134,14 +115,9 @@ const handleSave = async () => {
           class="w-full text-xs!" />
       </div>
 
-      <div class="space-y-1">
-        <label class="text-xs font-semibold text-slate-700">Lokasi Pickup</label>
-        <MapPicker v-model="mapLocation" />
-      </div>
-
       <div class="flex items-center gap-2">
-        <Checkbox v-model="form.is_default" :binary="true" inputId="cod_is_default" />
-        <label for="cod_is_default" class="text-xs font-semibold text-slate-700">Jadikan alamat utama</label>
+        <Checkbox v-model="form.is_default" :binary="true" inputId="address_is_default" />
+        <label for="address_is_default" class="text-xs font-semibold text-slate-700">Jadikan alamat utama</label>
       </div>
 
       <div class="flex gap-2 pt-2">

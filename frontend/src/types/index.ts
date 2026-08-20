@@ -29,14 +29,14 @@ export type {
     // Product
     RejectProductRequest, RejectShopRequest,
     // Order
-    ResendVerificationCodeRequest, ShipOrderRequest,
+    ShipOrderRequest,
     // Shipping
     ShippingCalculateRequest, ShippingCalculation, ShippingOption,
     // COD Location
     StoreLocationRequest as StoreCodLocationRequest, StoreProductBulkRequest,
     StoreProductInput,
     // Admin
-    SuspendUserRequest, UpdateCartItemRequest, UpdateCategoryRequest, UpdateProductRequest, UpdateShopRequest,
+    SuspendUserRequest, UpdateCartItemRequest, UpdateCategoryRequest, UpdateLocationRequest, UpdateProductRequest, UpdateProfileRequest, UpdateShopRequest,
     // Payment
     UploadPaymentRequest, VerifyEmailRequest
 } from './schemas';
@@ -45,13 +45,12 @@ export type {
 // DOMAIN ENTITIES (from backend/app/Models/ + Resources)
 // ─────────────────────────────────────────────────────
 export type {
-    Cart, CartGroupByShop, CartItem, CartStockStatus, Category, CodLocation,
+    // Analytics
+    AnalyticsSalesRow, Cart, CartGroupByShop, CartItem, CartStockStatus, Category, CodLocation,
     DailyProductSales,
     EmailVerificationCode, LowStockProduct, Order,
     OrderItem,
-    Payment,
-    // Analytics
-    PlatformStats, Product,
+    Payment, PlatformStats, Product,
     ProductImage, SalesRow, SellerOverview, SellerTopProduct, Shop, TopProduct, TopSeller,
     // Core entities
     User

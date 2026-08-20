@@ -31,7 +31,7 @@ class PaymentTest extends TestCase
 
     $this->order = Order::factory()->create([
       'buyer_id' => $this->buyer->id,
-      'status' => OrderStatus::PENDING,
+      'status' => OrderStatus::AWAITING_VERIFICATION,
     ]);
 
     $this->payment = Payment::factory()->create([
@@ -99,7 +99,7 @@ class PaymentTest extends TestCase
       ->patch("/api/v1/payments/{$this->payment->id}/verify");
 
     $response->assertStatus(200)
-      ->assertJsonPath('data.status', 'processing');
+      ->assertJsonPath('data.status', 'awaiting_verification');
 
     $this->assertDatabaseHas('payments', [
       'id' => $this->payment->id,
@@ -108,7 +108,7 @@ class PaymentTest extends TestCase
 
     $this->assertDatabaseHas('orders', [
       'id' => $this->order->id,
-      'status' => 'processing',
+      'status' => 'awaiting_verification',
     ]);
 
     Notification::assertSentTo(
@@ -149,7 +149,7 @@ class PaymentTest extends TestCase
     $codOrder = Order::factory()->create([
       'buyer_id' => $this->buyer->id,
       'payment_method' => 'cod',
-      'status' => OrderStatus::PENDING,
+      'status' => OrderStatus::AWAITING_VERIFICATION,
     ]);
 
     $codPayment = Payment::factory()->create([
@@ -161,7 +161,7 @@ class PaymentTest extends TestCase
       ->post("/api/v1/orders/{$codOrder->id}/cod-confirm");
 
     $response->assertStatus(200)
-      ->assertJsonPath('data.status', 'processing');
+      ->assertJsonPath('data.status', 'awaiting_verification');
 
     $this->assertDatabaseHas('payments', [
       'id' => $codPayment->id,

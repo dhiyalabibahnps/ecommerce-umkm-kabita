@@ -65,7 +65,7 @@ async function handleLogout() {
 
 <template>
   <header class="bg-[#faf8ff] shadow-sm sticky top-0 z-50">
-    <div class="container max-w-7xl mx-auto px-4 py-4">
+    <div class="container max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 py-4">
       <!-- Desktop header -->
       <div class="hidden lg:flex items-center justify-between gap-4">
         <div class="flex items-center gap-8">
@@ -87,14 +87,13 @@ async function handleLogout() {
               class="w-full border-0 bg-transparent pl-10 pr-4 text-sm text-slate-700 outline-none ring-0 shadow-none placeholder:text-slate-400 focus:border-0 focus:outline-none focus:ring-0" />
           </div> -->
           <div class="relative">
-            <Button icon="pi pi-shopping-cart" label="Keranjang" text aria-label="Buka keranjang belanja"
-              class="px-2! sm:px-3!" @click="router.push('/cart')" />
+            <Button icon="pi pi-shopping-cart" text aria-label="Buka keranjang belanja" class="px-2! sm:px-3!"
+              @click="router.push('/cart')" />
             <span v-if="cartItemCount"
               class="absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-semibold text-white">
               {{ cartItemCount }}
             </span>
           </div>
-          <Button icon="pi pi-bell" text aria-label="Notifikasi" />
           <template v-if="isLoggedIn">
             <Button label="Profil" icon="pi pi-user" text @click="router.push('/profile/account')" />
             <Button label="Keluar" icon="pi pi-sign-out" text severity="secondary" @click="handleLogout" />
@@ -163,7 +162,7 @@ async function handleLogout() {
     <!-- Mobile nav menu (dropdown) -->
     <Transition name="slide">
       <nav v-if="isMenuOpen" class="lg:hidden border-t border-slate-100 bg-[#faf8ff]">
-        <div class="container max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
+        <div class="container max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
           <router-link to="/" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
             @click="closeMenu">Beranda</router-link>
           <router-link to="/produk" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"

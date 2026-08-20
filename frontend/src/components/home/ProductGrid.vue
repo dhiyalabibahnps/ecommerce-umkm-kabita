@@ -7,7 +7,7 @@ const props = defineProps<{ products: Product[] }>()
 </script>
 
 <template>
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+  <div class="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
     <div v-for="product in props.products" :key="product.id">
       <ProductCard :product="product" />
     </div>

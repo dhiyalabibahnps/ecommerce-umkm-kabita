@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { publicProductService } from '@/services/publicProductService'
 import { getApiErrorMessage } from '@/services/apiError'
+import { publicProductService } from '@/services/publicProductService'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
 import type { Product } from '@/types'
@@ -99,7 +99,7 @@ const handleBuyNow = async () => {
 </script>
 
 <template>
-  <div class="max-w-7xl container mx-auto px-4 py-8">
+  <div class="max-w-2xl lg:max-w-5xl xl:max-w-7xl container mx-auto px-4 py-8">
     <div class="flex flex-col gap-6">
       <nav aria-label="Breadcrumb" class="text-sm text-slate-500">
         <ol class="flex flex-wrap items-center gap-2">
@@ -126,7 +126,7 @@ const handleBuyNow = async () => {
 
       <section v-if="product" class="grid gap-8 sm:grid-cols-[5fr_7fr]">
         <div class="space-y-4">
-          <div class="rounded-2xl border detail-page__border bg-white p-4 shadow-sm">
+          <div class="rounded-md border detail-page__border bg-white p-4 shadow-sm">
             <div class="aspect-square overflow-hidden rounded-xl bg-slate-50">
               <img :src="selectedImage" :alt="product.name" class="h-full w-full object-contain" />
             </div>
@@ -175,48 +175,48 @@ const handleBuyNow = async () => {
             </div> -->
           </div>
 
-          <div class="space-y-4 rounded-2xl border detail-page__border bg-white p-6">
+          <div class="space-y-4 rounded-md border detail-page__border bg-white p-4">
 
-            <div class="flex flex-wrap items-center gap-4">
-              <div class="min-w-30">
-                <div class="text-sm font-bold text-slate-950">Kuantitas</div>
-                <div>
-                  <div v-show="authStore"
-                    class="mt-2 inline-flex overflow-hidden rounded-2xl border detail-page__quantity-control bg-white mb-2">
-                    <button type="button"
-                      class="px-2 text-lg text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
-                      @click="decrementQuantity" :disabled="quantity <= 1">
-                      −
-                    </button>
-                    <div class="flex min-w-12 items-center justify-center px-4 text-sm font-semibold text-slate-900">
-                      {{ quantity }}
-                    </div>
-                    <button type="button"
-                      class="px-2 text-lg text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
-                      @click="incrementQuantity" :disabled="quantity >= product.stock">
-                      +
-                    </button>
+            <div class="flex flex-row flex-wrap items-center gap-4 min-w-30">
+              <!-- <div class=""> -->
+              <div class="text-sm font-bold text-slate-950">Kuantitas</div>
+              <div>
+                <div v-show="authStore"
+                  class="mt-2 inline-flex overflow-hidden rounded-md border detail-page__quantity-control bg-white mb-2">
+                  <button type="button"
+                    class="px-2 text-lg text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
+                    @click="decrementQuantity" :disabled="quantity <= 1">
+                    −
+                  </button>
+                  <div class="flex min-w-12 items-center justify-center px-4 text-sm font-semibold text-slate-900">
+                    {{ quantity }}
                   </div>
-                  <div class="text-sm text-slate-500">Tersedia: {{ product.stock }}</div>
+                  <button type="button"
+                    class="px-2 text-lg text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
+                    @click="incrementQuantity" :disabled="quantity >= product.stock">
+                    +
+                  </button>
                 </div>
-
               </div>
+              <div class="text-sm text-slate-500">Tersedia: {{ product.stock }}</div>
+
+              <!-- </div> -->
             </div>
 
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
               <button type="button" @click="handleAddToCart"
-                class="detail-page__secondary-button inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border px-5 py-4 text-sm font-semibold transition hover:bg-slate-50">
+                class="border-2 border-solid border-primary bg-white inline-flex flex-1 items-center justify-center gap-2 rounded-md p-2 text-sm font-semibold transition hover:bg-slate-200">
                 <i class="pi pi-shopping-cart"></i>
                 Tambah Keranjang
               </button>
               <button type="button" @click="handleBuyNow"
-                class="detail-page__primary-button inline-flex flex-1 items-center justify-center rounded-2xl px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#0037a0]">
+                class=" border-2 border-solid border-primary bg-primary inline-flex flex-1 items-center justify-center rounded-md p-2 text-sm font-semibold text-white transition hover:bg-[#0037a0]">
                 Beli Sekarang
               </button>
             </div>
           </div>
 
-          <div class="rounded-2xl border detail-page__border bg-surface-container p-5">
+          <div class="rounded-md border detail-page__border bg-surface-container p-4">
             <div class="flex flex-wrap items-center gap-4">
               <div class="flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white">
                 <i class="pi pi-store text-lg text-slate-700"></i>
@@ -226,13 +226,13 @@ const handleBuyNow = async () => {
                 <div class="text-sm font-medium text-slate-500">Kota Bandung</div>
               </div>
               <button type="button"
-                class="detail-page__secondary-button rounded-2xl border px-4 py-3 text-sm font-semibold transition hover:bg-slate-50">
+                class="detail-page__secondary-button rounded-md border px-4 py-3 text-sm font-semibold transition hover:bg-slate-50">
                 Kunjungi Toko
               </button>
             </div>
           </div>
 
-          <div class="space-y-4 rounded-2xl border detail-page__border bg-white p-6">
+          <div class="space-y-4 rounded-md border detail-page__border bg-white p-4">
             <div>
               <h2 class="text-xl font-bold text-slate-950">Deskripsi Produk</h2>
             </div>
@@ -244,7 +244,7 @@ const handleBuyNow = async () => {
         </div>
       </section>
 
-      <section v-else class="rounded-2xl border detail-page__border bg-white p-8 text-center text-slate-700 shadow-sm">
+      <section v-else class="rounded-md border detail-page__border bg-white p-8 text-center text-slate-700 shadow-sm">
         <p class="text-lg font-semibold">Produk tidak ditemukan.</p>
         <p class="mt-2 text-sm text-slate-500">Silakan kembali ke daftar produk atau cari produk lain.</p>
       </section>
@@ -282,6 +282,7 @@ const handleBuyNow = async () => {
 }
 
 .detail-page__primary-button {
+  border: 2px solid #004ac6;
   background-color: #004ac6;
 }
 

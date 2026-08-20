@@ -9,10 +9,12 @@ use App\Models\Shop;
 use App\Models\EmailVerificationCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Http\Requests\Auth\LoginRequest; // Import FormRequest
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResendEmailRequest;
+use App\Http\Requests\Auth\UpdateBuyerProfileRequest;
 use App\Http\Requests\Auth\VerifyEmailRequest;
 use App\Http\Resources\ShopResource;
 use App\Http\Resources\UserResource;     // Import Resource
@@ -42,7 +44,9 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        $user = User::where('email', $request->email)->first();
+        $user = User::query()
+            ->where('email', $request->email)
+            ->first();
 
         logger("Halo test test user masuk : " . json_encode($user));
 
@@ -163,9 +167,14 @@ class AuthController extends Controller
      */
     public function verifyEmail(VerifyEmailRequest $request): JsonResponse
     {
-        $user = User::where('email', $request->email)->first();
+        // $user = User::where('email', $request->email)->first();
+        $user = User::query()
+            ->where('email', $request->email)
+            ->first();
 
-        $verificationCode = EmailVerificationCode::where('user_id', $user->id)
+
+        $verificationCode = EmailVerificationCode::query()
+            ->where('user_id', $user->id)
             ->where('code', $request->code)
             ->where('is_used', false)
             ->where('expires_at', '>', now())
@@ -199,7 +208,9 @@ class AuthController extends Controller
      */
     public function resendCode(ResendEmailRequest $request): JsonResponse
     {
-        $user = User::where('email', $request->email)->first();
+        $user = User::query()
+            ->where('email', $request->email)
+            ->first();
 
         if ($user->email_verified_at) {
             return response()->json([
@@ -209,7 +220,8 @@ class AuthController extends Controller
         }
 
         // Hapus kode lama yang belum dipakai
-        EmailVerificationCode::where('user_id', $user->id)
+        EmailVerificationCode::query()
+            ->where('user_id', $user->id)
             ->where('is_used', false)
             ->delete();
 
@@ -248,7 +260,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->tokens()?->delete();
 
         return response()->json([
             'success' => true,
@@ -259,11 +271,40 @@ class AuthController extends Controller
     /**
      * Get current user
      */
-    public function me(Request $request)
+    public function me(Request $request): JsonResponse
     {
         return response()->json([
             'success' => true,
-            'data' => $request->user()
+            'data' => new UserResource($request->user())
+        ]);
+    }
+
+    /**
+     * Update buyer profile
+     *
+     * @response 200 body="{"success":true,"message":"Profil berhasil diperbarui.","data":{}}"
+     * @response 422 body="{"success":false,"message":"Validasi gagal.","errors":{}}"
+     */
+    public function updateProfile(UpdateBuyerProfileRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $data = $request->only(['name', 'phone', 'address', 'email']);
+
+        if ($request->hasFile('photo')) {
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
+            }
+
+            $data['photo'] = $request->file('photo')->store('profiles', 'public');
+        }
+
+        $user->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil berhasil diperbarui.',
+            'data' => new UserResource($user->fresh()),
         ]);
     }
 }

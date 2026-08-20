@@ -3,14 +3,14 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import { onMounted, ref } from 'vue'
 
+import { adminAnalyticsService } from '@/services/adminAnalyticsService'
+import { adminOrderService } from '@/services/adminOrderService'
+import { adminShopService } from '@/services/adminShopService'
 import AdminPendingVerifications from '../components/dashboard/AdminDashboardPendingVerifications.vue'
 import AdminRecentTransactions from '../components/dashboard/AdminDashboardRecentTransactions.vue'
 import AdminRevenueChart from '../components/dashboard/AdminDashboardRevenueChart.vue'
 import AdminStatCards from '../components/dashboard/AdminDashboardStatCards.vue'
 import AdminTopPerformers from '../components/dashboard/AdminDashboardTopPerformers.vue'
-import { adminAnalyticsService } from '@/services/adminAnalyticsService'
-import { adminShopService } from '@/services/adminShopService'
-import { adminOrderService } from '@/services/adminOrderService'
 
 import type { Order, PlatformStats, Shop, TopProduct, TopSeller } from '@/types/entities'
 
@@ -70,9 +70,9 @@ onMounted(async () => {
     </div>
 
     <div v-else class="space-y-8">
-      <AdminStatCards :stats="platformStats" />
+      <AdminStatCards v-if="platformStats" :stats="platformStats" />
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div v-if="platformStats" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2">
           <AdminRevenueChart :monthlyTransactions="platformStats.monthly_transactions" />
         </div>

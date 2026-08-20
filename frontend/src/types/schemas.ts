@@ -32,6 +32,14 @@ export interface ResendVerificationCodeRequest {
   email: string;
 }
 
+export interface UpdateProfileRequest {
+  name: string;
+  phone: string;
+  address?: string | null;
+  email: string;
+  photo?: File | null;
+}
+
 // ─────────────────────────────────────────────────────
 // CART REQUESTS
 // ─────────────────────────────────────────────────────
@@ -103,6 +111,15 @@ export interface StoreLocationRequest {
   name: string;
   address: string;
   phone: string;
+  latitude?: string | null;
+  longitude?: string | null;
+  is_default?: boolean | null;
+}
+
+export interface UpdateLocationRequest {
+  name?: string;
+  address?: string;
+  phone?: string;
   latitude?: string | null;
   longitude?: string | null;
   is_default?: boolean | null;

@@ -41,9 +41,17 @@ if ! "$PHP_BIN" -m | grep -qi '^pdo_mysql$'; then
   fail "Ekstensi pdo_mysql belum aktif. Install php-mysql lalu jalankan ulang."
 fi
 
-if ! "$PHP_BIN" artisan db:show --database=mariadb >/dev/null 2>&1; then
-  fail "MariaDB tidak dapat diakses. Pastikan service aktif dan DB_* di backend/.env benar."
-fi
+log "Menunggu MariaDB siap..."
+for i in {1..5}; do
+  if "$PHP_BIN" artisan db:show --database=mariadb >/dev/null 2>&1; then
+    break
+  fi
+  if [[ "$i" -lt 5 ]]; then
+    sleep 2
+  else
+    fail "MariaDB tidak dapat diakses setelah 5 percobaan. Pastikan service aktif dan DB_* di backend/.env benar."
+  fi
+done
 
 log "Menjalankan migrasi MariaDB..."
 "$PHP_BIN" artisan migrate --force

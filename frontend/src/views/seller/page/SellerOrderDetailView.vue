@@ -6,9 +6,9 @@ import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import type { Order } from '@/types';
 import { getApiErrorMessage } from '@/services/apiError';
 import { sellerOrderService } from '@/services/sellerOrderService';
+import type { Order } from '@/types';
 
 // Sub Components
 import OrderBuyerCard from '../components/order-detail/OrderBuyerCard.vue';
@@ -48,7 +48,33 @@ const handleShipOrder = async () => {
   isActionLoading.value = true;
   try {
     order.value = await sellerOrderService.ship(order.value.id, { tracking_number: order.value.tracking_number || undefined });
-    toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pesanan berhasil ditandai sebagai dikirim.', life: 3000 });
+    toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pesanan berhasil dikirim.', life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Gagal', detail: getApiErrorMessage(error, 'Status pesanan gagal diperbarui.'), life: 4000 });
+  } finally {
+    isActionLoading.value = false;
+  }
+};
+
+const handlePackOrder = async () => {
+  if (!order.value) return;
+  isActionLoading.value = true;
+  try {
+    order.value = await sellerOrderService.pack(order.value.id);
+    toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pesanan berhasil dikemas.', life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Gagal', detail: getApiErrorMessage(error, 'Status pesanan gagal diperbarui.'), life: 4000 });
+  } finally {
+    isActionLoading.value = false;
+  }
+};
+
+const handleCodComplete = async () => {
+  if (!order.value) return;
+  isActionLoading.value = true;
+  try {
+    order.value = await sellerOrderService.codComplete(order.value.id);
+    toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pesanan COD berhasil diselesaikan.', life: 3000 });
   } catch (error) {
     toast.add({ severity: 'error', summary: 'Gagal', detail: getApiErrorMessage(error, 'Status pesanan gagal diperbarui.'), life: 4000 });
   } finally {
@@ -85,9 +111,14 @@ onMounted(() => {
         </div>
 
         <div class="flex items-center gap-2">
-          <Button icon="pi pi-print" label="Cetak Invoice" outlined severity="secondary" size="small" @click="printInvoice" />
-          <Button v-if="order.status === 'processing'" label="Konfirmasi Pengiriman" icon="pi pi-send" size="small"
+          <Button icon="pi pi-print" label="Cetak Invoice" outlined severity="secondary" size="small"
+            @click="printInvoice" />
+          <Button v-if="order.status === 'processing'" label="Kemas Pesanan" icon="pi pi-box" size="small"
+            :loading="isActionLoading" @click="handlePackOrder" />
+          <Button v-if="order.status === 'packed'" label="Konfirmasi Pengiriman" icon="pi pi-send" size="small"
             :loading="isActionLoading" @click="handleShipOrder" />
+          <Button v-if="order.status === 'cod_meeting'" label="Selesaikan Pesanan COD" icon="pi pi-check" size="small"
+            :loading="isActionLoading" @click="handleCodComplete" />
         </div>
       </div>
 
@@ -97,7 +128,7 @@ onMounted(() => {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div class="lg:col-span-8">
           <OrderStatusAlert :status="order.status" :notes="order.notes" :shippingMethod="order.shipping_method" />
-          <OrderTransferProof :proofImage="order.payment?.proof_image || null" />
+          <OrderTransferProof :proofImage="order.payment?.proof_image ?? undefined" />
           <OrderProductList :items="order.items" :notes="order.notes" />
           <OrderTimeline :status="order.status" :createdAt="order.created_at" :updatedAt="order.updated_at" />
         </div>

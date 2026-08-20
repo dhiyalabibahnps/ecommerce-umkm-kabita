@@ -22,6 +22,7 @@ class CodLocationResource extends JsonResource
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
             'is_default' => $this->is_default,
+            'phone' => $this->phone,
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),
         ];

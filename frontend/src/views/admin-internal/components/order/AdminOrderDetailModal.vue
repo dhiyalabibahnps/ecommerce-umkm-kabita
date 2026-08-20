@@ -95,7 +95,7 @@ const getStatusSeverity = (status?: string) => {
               <div>
                 <span class="text-slate-400 block text-[11px]">Metode Kirim:</span>
                 <span class="font-bold text-slate-800 uppercase">{{ order.shipping_method === 'cod' ? 'COD' : 'Kurir'
-                  }}</span>
+                }}</span>
               </div>
             </div>
           </div>
@@ -111,12 +111,12 @@ const getStatusSeverity = (status?: string) => {
                   class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0" />
                 <div>
                   <p class="font-bold text-slate-800 line-clamp-1">{{ item.product?.name || 'Nama Produk' }}</p>
-                  <p class="text-slate-400 mt-0.5">{{ item.quantity }} x {{ formatRupiah(item.product?.price as string)
-                    }}</p>
+                  <p class="text-slate-400 mt-0.5">{{ item.quantity }} x {{ formatRupiah(Number(item.product?.price)) }}
+                  </p>
                 </div>
               </div>
-              <span class="font-extrabold text-slate-800">{{ formatRupiah(parseFloat(item.product?.price as string) *
-                item.quantity) }}</span>
+              <span class="font-extrabold text-slate-800">{{ formatRupiah(Number(item.product?.price) * item.quantity)
+                }}</span>
             </div>
           </div>
         </div>
@@ -126,7 +126,7 @@ const getStatusSeverity = (status?: string) => {
           <div class="flex items-center justify-between text-slate-600">
             <span>Subtotal Produk:</span>
             <span>{{ formatRupiah(parseFloat(order.total_amount || '0') - parseFloat(order.shipping_cost || '0'))
-              }}</span>
+            }}</span>
           </div>
           <div class="flex items-center justify-between text-slate-600">
             <span>Biaya Pengiriman:</span>

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { AnalyticsSalesRow, Order, SellerOverview } from '@/types'
-import Button from 'primevue/button'
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { getApiErrorMessage } from '@/services/apiError'
 import { sellerAnalyticsService } from '@/services/sellerAnalyticsService'
 import { sellerOrderService } from '@/services/sellerOrderService'
-import { getApiErrorMessage } from '@/services/apiError'
+import type { AnalyticsSalesRow, Order, SellerOverview } from '@/types'
+import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const toast = useToast()

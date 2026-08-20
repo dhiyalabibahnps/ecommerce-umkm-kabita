@@ -25,7 +25,7 @@ function gotoProducts() {
     <div v-if="heroImage" class="absolute inset-0 bg-cover bg-center"
       :style="{ backgroundImage: `url(${heroImage})` }" />
     <div class="absolute inset-0 bg-linear-to-r from-slate-950/80 via-slate-950/40 to-transparent"></div>
-    <div class="relative z-10 container mx-auto max-w-7xl px-4 py-24">
+    <div class="relative z-10 container mx-auto max-w-2xl lg:max-w-5xl xl:max-w-7xl px-4 py-24">
       <div class="max-w-2xl">
         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4">
           Dukung UMKM Lokal, Belanja Lebih Mudah

@@ -104,7 +104,7 @@ class CheckoutController extends Controller
       'total_amount' => $totalAmount,
       'shipping_method' => $request->input('shipping_method'),
       'payment_method' => $request->input('payment_method'),
-      'status' => OrderStatus::PENDING,
+      'status' => OrderStatus::AWAITING_VERIFICATION,
       'shipping_address' => $shippingAddress,
       'notes' => $request->input('notes'),
     ]);

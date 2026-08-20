@@ -114,9 +114,9 @@ class PaymentController extends Controller
     // Update payment status
     $payment->update(['status' => PaymentStatus::VERIFIED]);
 
-    // Update order status to processing
+    // Update order status to awaiting verification
     $order = $payment->order;
-    $order->update(['status' => \App\Enums\OrderStatus::PROCESSING]);
+    $order->update(['status' => \App\Enums\OrderStatus::AWAITING_VERIFICATION]);
 
     // Load relationships for response
     $order->load(['items', 'shop', 'payment', 'buyer']);

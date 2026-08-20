@@ -3,7 +3,7 @@
 
 <template>
   <footer class="bg-[#faf8ff] mt-auto py-12">
-    <div class="container max-w-7xl mx-auto px-4">
+    <div class="container max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4">
       <div class="grid gap-8 md:grid-cols-4">
         <div>
           <h4 class="font-bold mb-3 text-lg text-slate-950">Kabita</h4>

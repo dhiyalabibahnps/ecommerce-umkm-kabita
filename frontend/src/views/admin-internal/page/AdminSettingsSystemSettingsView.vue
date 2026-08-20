@@ -20,7 +20,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-6 max-w-7xl mx-auto relative min-h-screen">
+  <div class="p-6 max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto relative min-h-screen">
 
     <Transition name="fade">
       <div v-if="isLoading"

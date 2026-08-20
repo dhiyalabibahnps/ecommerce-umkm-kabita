@@ -36,8 +36,9 @@ class OrderController extends Controller
    */
   public function index(IndexOrderRequest $request): JsonResponse
   {
-    $query = Order::where('buyer_id', Auth::id())
-      ->with(['items', 'shop', 'payment', 'buyer']);
+    $query = Order::query()
+      ->where('buyer_id', Auth::id())
+      ->with(['items.product', 'shop', 'payment', 'buyer']);
 
     // Filter by status
     if ($request->filled('status')) {
@@ -92,7 +93,7 @@ class OrderController extends Controller
       ], 403);
     }
 
-    $order->load(['items', 'shop', 'payment', 'buyer']);
+    $order->load(['items.product', 'shop', 'payment', 'buyer']);
 
     return response()->json([
       'success' => true,
@@ -121,16 +122,16 @@ class OrderController extends Controller
       ], 403);
     }
 
-    // Validate current status is shipped
-    if ($order->status !== OrderStatus::SHIPPED) {
+    // Validate current status is shipped or cod meeting
+    if (!in_array($order->status, [OrderStatus::SHIPPED, OrderStatus::COD_MEETING], true)) {
       return response()->json([
         'success' => false,
-        'message' => 'Hanya order dengan status shipped yang dapat dikonfirmasi.',
+        'message' => 'Hanya order yang sedang dikirim atau ketemuan COD yang dapat diselesaikan.',
       ], 422);
     }
 
-    // Update order status to delivered
-    $order->update(['status' => OrderStatus::DELIVERED]);
+    // Update order status to completed
+    $order->update(['status' => OrderStatus::COMPLETED]);
 
     // Update daily_product_sales for each item
     foreach ($order->items as $item) {
@@ -149,7 +150,7 @@ class OrderController extends Controller
       );
     }
 
-    $order->load(['items', 'shop', 'payment', 'buyer']);
+    $order->load(['items.product', 'shop', 'payment', 'buyer']);
 
     return response()->json([
       'success' => true,
@@ -180,7 +181,7 @@ class OrderController extends Controller
     }
 
     // Validate current status is pending
-    if ($order->status !== OrderStatus::PENDING) {
+    if ($order->status !== OrderStatus::AWAITING_VERIFICATION) {
       return response()->json([
         'success' => false,
         'message' => 'Hanya order dengan status pending yang dapat dibatalkan.',
@@ -189,7 +190,7 @@ class OrderController extends Controller
 
     // Restore product stock
     foreach ($order->items as $item) {
-      $item->product->increment('stock', $item->quantity);
+      $item->product->increment('stock', $item->quantity, []);
     }
 
     // Process refund if payment was verified/paid
@@ -250,11 +251,13 @@ class OrderController extends Controller
     // Update payment status to verified
     $order->payment->update(['status' => PaymentStatus::VERIFIED]);
 
-    // Update order status to processing
-    $order->update(['status' => OrderStatus::PROCESSING]);
+    // Update order status based on shipping method
+    $order->update([
+      'status' => $order->shipping_method === 'cod' ? OrderStatus::COD_MEETING : OrderStatus::AWAITING_VERIFICATION,
+    ]);
 
     // Load all relationships for response
-    $order->load(['items', 'shop', 'payment', 'buyer']);
+    $order->load(['items.product', 'shop', 'payment', 'buyer']);
 
     return response()->json([
       'success' => true,

@@ -24,7 +24,7 @@ class OrderTest extends TestCase
     $order = Order::factory()->create([
       'buyer_id' => $buyer->id,
       'shop_id' => $shop->id,
-      'status' => OrderStatus::PENDING,
+      'status' => OrderStatus::AWAITING_VERIFICATION,
     ]);
 
     $response = $this->actingAs($buyer)->getJson('/api/v1/orders');
@@ -33,7 +33,7 @@ class OrderTest extends TestCase
       ->assertJsonCount(1, 'data')
       ->assertJsonFragment([
         'id' => $order->id,
-        'status' => OrderStatus::PENDING->value,
+        'status' => OrderStatus::AWAITING_VERIFICATION->value,
       ]);
   }
 
@@ -62,15 +62,15 @@ class OrderTest extends TestCase
     $pendingOrder = Order::factory()->create([
       'buyer_id' => $buyer->id,
       'shop_id' => $shop->id,
-      'status' => OrderStatus::PENDING,
+      'status' => OrderStatus::AWAITING_VERIFICATION,
     ]);
     $completedOrder = Order::factory()->create([
       'buyer_id' => $buyer->id,
       'shop_id' => $shop->id,
-      'status' => OrderStatus::DELIVERED,
+      'status' => OrderStatus::COMPLETED,
     ]);
 
-    $response = $this->actingAs($buyer)->getJson('/api/v1/orders?status=' . OrderStatus::PENDING->value);
+    $response = $this->actingAs($buyer)->getJson('/api/v1/orders?status=' . OrderStatus::AWAITING_VERIFICATION->value);
 
     $response->assertStatus(200)
       ->assertJsonCount(1, 'data')
@@ -124,7 +124,7 @@ class OrderTest extends TestCase
     $shop = Shop::factory()->create(['seller_id' => $seller->id]);
     $order = Order::factory()->create([
       'shop_id' => $shop->id,
-      'status' => OrderStatus::PENDING,
+      'status' => OrderStatus::AWAITING_VERIFICATION,
     ]);
 
     $response = $this->actingAs($seller)->getJson('/api/v1/seller/orders');
@@ -133,7 +133,7 @@ class OrderTest extends TestCase
       ->assertJsonCount(1, 'data')
       ->assertJsonFragment([
         'id' => $order->id,
-        'status' => OrderStatus::PENDING->value,
+        'status' => OrderStatus::AWAITING_VERIFICATION->value,
       ]);
   }
 
@@ -160,20 +160,20 @@ class OrderTest extends TestCase
     $shop = Shop::factory()->create(['seller_id' => $seller->id]);
     $pendingOrder = Order::factory()->create([
       'shop_id' => $shop->id,
-      'status' => OrderStatus::PENDING,
+      'status' => OrderStatus::AWAITING_VERIFICATION,
     ]);
     $completedOrder = Order::factory()->create([
       'shop_id' => $shop->id,
-      'status' => OrderStatus::DELIVERED,
+      'status' => OrderStatus::COMPLETED,
     ]);
 
-    $response = $this->actingAs($seller)->getJson('/api/v1/seller/orders?status=' . OrderStatus::PENDING->value);
+    $response = $this->actingAs($seller)->getJson('/api/v1/seller/orders?status=' . OrderStatus::AWAITING_VERIFICATION->value);
 
     $response->assertStatus(200)
       ->assertJsonCount(1, 'data')
       ->assertJsonFragment([
         'id' => $pendingOrder->id,
-        'status' => OrderStatus::PENDING->value,
+        'status' => OrderStatus::AWAITING_VERIFICATION->value,
       ]);
   }
 

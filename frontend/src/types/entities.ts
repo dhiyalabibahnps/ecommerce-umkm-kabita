@@ -26,6 +26,7 @@ export interface User {
   address: string | null;
   status: UserStatus;
   proof_image: string | null;
+  photo: string | null;
   verified_by: number | null;
   verified_at: string | null;
   created_at: string;

@@ -155,15 +155,17 @@ const shippingLabel = computed(() => {
   return option?.label ?? 'Reguler'
 })
 
-const shippingMethod = computed<'kurir' | 'cod'>(() => (selectedShippingValue.value.startsWith('cargo') ? 'kurir' : 'kurir'))
+const selectedPaymentMethod = ref<'transfer' | 'cod'>('transfer')
+
+const shippingMethod = computed<'kurir' | 'cod'>(() => (selectedPaymentMethod.value === 'cod' ? 'cod' : 'kurir'))
+
+console.log("[DEBUG] shippingMethod, selectedPaymentMethod : ", shippingMethod, selectedPaymentMethod)
 
 const orderNotes = computed(() => {
   const labels = flatItems.value.map((item) => item.selectedShipping).filter(Boolean)
   const unique = Array.from(new Set(labels))
   return unique.length ? `Ongkir: ${unique.join(', ')}` : null
 })
-
-const selectedPaymentMethod = ref<'transfer' | 'cod'>('transfer')
 
 const paymentMethodLabel = computed(() => (selectedPaymentMethod.value === 'cod' ? 'COD' : 'Transfer Bank Manual'))
 
@@ -189,16 +191,17 @@ const formatCurrency = (val: number) => {
 const totalItemsPrice = computed(() => {
   return flatItems.value.reduce((sum, g) => sum + (g.product?.price as number) * g.quantity, 0)
 })
-const totalShippingCost = 35000
+const totalShippingCost = computed(() => (selectedPaymentMethod.value === 'cod' ? 0 : 35000))
 const serviceFee = 2500
-const grandTotal = computed(() => totalItemsPrice.value + totalShippingCost + serviceFee)
+const grandTotal = computed(() => totalItemsPrice.value + totalShippingCost.value + serviceFee)
 
 // --- STATE & SIMULASI UPLOAD BUKTI TRANSFER ---
 const fileInput = ref<HTMLInputElement | null>(null)
 const previewImage = ref<string | null>(null)
+const selectedFile = ref<File | null>(null)
 const isUploading = ref(false)
 const uploadProgress = ref(0)
-const isSuccess = ref(false)
+const isSuccessUpload = ref(false)
 
 const triggerFileInput = () => {
   fileInput.value?.click()
@@ -223,29 +226,28 @@ const processUpload = (file: File) => {
     return
   }
 
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Ukuran file maksimal 2MB')
+    return
+  }
+
   const reader = new FileReader()
   reader.onload = (e) => {
     previewImage.value = e.target?.result as string
   }
   reader.readAsDataURL(file)
 
-  isUploading.value = true
-  isSuccess.value = false
-  uploadProgress.value = 0
+  selectedFile.value = file
 
-  const interval = setInterval(() => {
-    uploadProgress.value += 20
-    if (uploadProgress.value >= 100) {
-      clearInterval(interval)
-      isUploading.value = false
-      isSuccess.value = true
-    }
-  }, 200)
+  isUploading.value = false
+  isSuccessUpload.value = true
+  uploadProgress.value = 100
 }
 
 const removeImage = () => {
   previewImage.value = null
-  isSuccess.value = false
+  selectedFile.value = null
+  isSuccessUpload.value = false
   uploadProgress.value = 0
   if (fileInput.value) {
     fileInput.value.value = ''
@@ -256,31 +258,6 @@ const removeImage = () => {
 const fetchCheckoutData = () => {
   isLoadingPage.value = true
   loadLocations();
-  setTimeout(() => {
-
-    // orderGroups.value = [
-    //   {
-    //     storeName: 'Toko Kopi Lokal',
-    //     productName: 'Biji Kopi Arabika Gayo - 250g',
-    //     variant: 'Medium Roast',
-    //     price: 85000,
-    //     qty: 1,
-    //     image: 'https://primefaces.org/cdn/primevue/images/galleria/galleria1.jpg',
-    //     selectedShipping: 'reguler_15'
-    //   },
-    //   {
-    //     storeName: 'Kerajinan Tangan Jabar',
-    //     productName: 'Keranjang Anyaman Rotan Premium',
-    //     variant: 'Ukuran: Sedang',
-    //     price: 45000,
-    //     qty: 2,
-    //     image: 'https://primefaces.org/cdn/primevue/images/galleria/galleria2.jpg',
-    //     selectedShipping: 'reguler_20'
-    //   }
-    // ]
-
-    isLoadingPage.value = false
-  }, 1000)
 }
 
 
@@ -293,6 +270,8 @@ const loadLocations = async () => {
     }
   } catch (error) {
     console.error('Gagal memuat alamat COD', error)
+  } finally {
+    isLoadingPage.value = false
   }
 }
 
@@ -324,10 +303,10 @@ const handleCreateOrder = async () => {
     await cartStore.loadCart()
     localStorage.removeItem('checkoutItems')
 
-    if (previewImage.value && order.id) {
+    if (selectedFile.value && order.id) {
       try {
         await buyerPaymentService.uploadProof(order.id, {
-          proof_image: previewImage.value as any
+          proof_image: selectedFile.value
         })
       } catch (uploadError) {
         console.error('Gagal mengunggah bukti transfer', uploadError)
@@ -375,7 +354,7 @@ onMounted(() => {
     </div>
 
     <!-- KONTEN UTAMA DITAMPILKAN SETELAH LOADING -->
-    <div v-else class="max-w-7xl mx-auto space-y-6">
+    <div v-else class="max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto space-y-6">
 
       <!-- Top Bar Navigation -->
       <div class="flex items-center justify-between gap-3 text-xs text-slate-600">
@@ -383,10 +362,6 @@ onMounted(() => {
           <i class="pi pi-arrow-left text-xs"></i>
           <span>Kembali</span>
         </router-link>
-        <div class="flex items-center gap-1.5 text-slate-500 font-medium">
-          <i class="pi pi-lock text-xs"></i>
-          <span class="hidden sm:inline">Checkout Keamanan SSL</span>
-        </div>
       </div>
 
       <!-- Main Layout Grid -->
@@ -402,7 +377,8 @@ onMounted(() => {
                 <i class="pi pi-map-marker text-blue-600"></i>
                 <h2>Alamat Pengiriman</h2>
               </div>
-              <button @click="isAddressModalOpen = true" class="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50">
+              <button @click="isAddressModalOpen = true"
+                class="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50">
                 Ubah Alamat
               </button>
             </div>
@@ -431,9 +407,10 @@ onMounted(() => {
               </div>
 
               <div class="flex min-w-0 items-start gap-3 sm:gap-4">
-                <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 text-[10px] text-slate-400">
-                  <img v-if="group.product?.images?.[0]?.url" :src="group.product.images[0].url!" :alt="group.product?.name"
-                    class="h-full w-full object-cover" />
+                <div
+                  class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 text-[10px] text-slate-400">
+                  <img v-if="group.product?.images?.[0]?.url" :src="group.product.images[0].url!"
+                    :alt="group.product?.name" class="h-full w-full object-cover" />
                   <span v-else>Tanpa gambar</span>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -447,7 +424,8 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="min-w-0 space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+              <div v-if="selectedPaymentMethod !== 'cod'"
+                class="min-w-0 space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
                 <label class="text-[11px] text-slate-500 block">Pilih Pengiriman</label>
                 <Select :modelValue="group.selectedShipping" :options="shippingOptions" optionLabel="label"
                   optionValue="value" class="w-full min-w-0! text-xs! bg-white! rounded-lg!"
@@ -476,15 +454,16 @@ onMounted(() => {
 
               <div class="space-y-1.5">
                 <label class="text-[11px] text-slate-500 block">Pilih Metode Pembayaran</label>
-                <Select v-model="selectedPaymentMethod" :options="paymentOptions" optionLabel="label" optionValue="value"
-                  class="w-full min-w-0! text-xs! bg-white! rounded-lg!" />
+                <Select v-model="selectedPaymentMethod" :options="paymentOptions" optionLabel="label"
+                  optionValue="value" class="w-full min-w-0! text-xs! bg-white! rounded-lg!" />
               </div>
 
               <p v-if="selectedPaymentMethod === 'transfer'" class="text-[11px] text-slate-600 leading-relaxed">
                 Silakan transfer sesuai dengan total tagihan ke rekening berikut:
               </p>
 
-              <div v-if="selectedPaymentMethod === 'transfer'" class="bg-white rounded p-3 border border-blue-100 flex items-center justify-between">
+              <div v-if="selectedPaymentMethod === 'transfer'"
+                class="bg-white rounded p-3 border border-blue-100 flex items-center justify-between">
                 <div>
                   <span class="text-[10px] text-slate-400 uppercase font-semibold block">{{ paymentInfo.bankName
                   }}</span>
@@ -502,62 +481,65 @@ onMounted(() => {
                 Pesanan akan diproses dengan pembayaran COD saat barang diterima.
               </p>
 
-              <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileSelect" />
+              <input v-if="selectedPaymentMethod === 'transfer'" ref="fileInput" type="file" accept="image/*"
+                class="hidden" @change="handleFileSelect" />
 
               <!-- Simulasi Upload Area -->
-              <div v-if="!previewImage && !isUploading" @click="triggerFileInput" @dragover.prevent
-                @drop.prevent="handleDrop"
-                class="border-2 border-dashed border-blue-200 hover:border-blue-500 rounded p-5 bg-white flex flex-col items-center justify-center cursor-pointer transition-colors group">
-                <div
-                  class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                  <i class="pi pi-cloud-upload text-lg"></i>
-                </div>
-                <p class="text-xs font-semibold text-slate-700">Unggah Bukti Transfer</p>
-                <p class="text-[10px] text-slate-400 mt-1">Klik atau seret gambar ke sini (.PNG, .JPG)</p>
-              </div>
-
-              <div v-else-if="isUploading" class="border border-blue-100 rounded p-4 bg-white space-y-2">
-                <div class="flex items-center justify-between text-xs text-slate-600 font-medium">
-                  <span class="flex items-center gap-2">
-                    <i class="pi pi-spin pi-spinner text-blue-600"></i>
-                    Mengunggah gambar...
-                  </span>
-                  <span>{{ uploadProgress }}%</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                  <div class="bg-blue-600 h-1.5 transition-all duration-200" :style="{ width: uploadProgress + '%' }">
-                  </div>
-                </div>
-              </div>
-
-              <div v-else-if="isSuccess && previewImage" class="space-y-2">
-                <div class="relative border border-slate-200 rounded overflow-hidden bg-white group">
-                  <img :src="previewImage" alt="Bukti Transfer" class="w-full h-36 object-cover" />
+              <template v-if="selectedPaymentMethod === 'transfer'">
+                <div v-if="!previewImage && !isUploading" @click="triggerFileInput" @dragover.prevent
+                  @drop.prevent="handleDrop"
+                  class="border-2 border-dashed border-blue-200 hover:border-blue-500 rounded p-5 bg-white flex flex-col items-center justify-center cursor-pointer transition-colors group">
                   <div
-                    class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button @click="triggerFileInput"
-                      class="bg-white text-slate-800 text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-slate-100">
-                      Ganti
-                    </button>
-                    <button @click="removeImage"
-                      class="bg-rose-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-rose-700">
-                      Hapus
-                    </button>
+                    class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <i class="pi pi-cloud-upload text-lg"></i>
+                  </div>
+                  <p class="text-xs font-semibold text-slate-700">Unggah Bukti Transfer</p>
+                  <p class="text-[10px] text-slate-400 mt-1">Klik atau seret gambar ke sini (.PNG, .JPG)</p>
+                </div>
+
+                <div v-else-if="isUploading" class="border border-blue-100 rounded p-4 bg-white space-y-2">
+                  <div class="flex items-center justify-between text-xs text-slate-600 font-medium">
+                    <span class="flex items-center gap-2">
+                      <i class="pi pi-spin pi-spinner text-blue-600"></i>
+                      Mengunggah gambar...
+                    </span>
+                    <span>{{ uploadProgress }}%</span>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-blue-600 h-1.5 transition-all duration-200" :style="{ width: uploadProgress + '%' }">
+                    </div>
                   </div>
                 </div>
 
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
-                    <i class="pi pi-check-circle text-xs"></i>
-                    <span>Berhasil diunggah</span>
+                <div v-else-if="isSuccessUpload && previewImage" class="space-y-2">
+                  <div class="relative border border-slate-200 rounded overflow-hidden bg-white group">
+                    <img :src="previewImage" alt="Bukti Transfer" class="w-full h-36 object-cover" />
+                    <div
+                      class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button @click="triggerFileInput"
+                        class="bg-white text-slate-800 text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-slate-100">
+                        Ganti
+                      </button>
+                      <button @click="removeImage"
+                        class="bg-rose-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-rose-700">
+                        Hapus
+                      </button>
+                    </div>
                   </div>
-                  <button @click="removeImage" class="text-[11px] text-rose-500 hover:underline">Hapus</button>
-                </div>
-              </div>
 
-              <p class="text-[10px] text-slate-400 italic">
-                *Pesanan akan diproses setelah bukti transfer dikonfirmasi oleh admin.
-              </p>
+                  <!-- <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+                      <i class="pi pi-check-circle text-xs"></i>
+                      <span>Berhasil diunggah</span>
+                    </div>
+                    <button @click="removeImage" class="text-[11px] text-rose-500 hover:underline">Hapus</button>
+                  </div> -->
+                </div>
+
+                <p class="text-[10px] text-slate-400 italic">
+                  *Pesanan akan diproses setelah bukti transfer dikonfirmasi oleh admin.
+                </p>
+              </template>
             </div>
           </div>
 
@@ -572,7 +554,8 @@ onMounted(() => {
               </div>
               <div class="flex items-center justify-between text-slate-600">
                 <span>Total Ongkos Kirim</span>
-                <span class="font-medium text-slate-800">{{ formatCurrency(totalShippingCost) }}</span>
+                <span class="font-medium text-slate-800">{{ selectedPaymentMethod === 'cod' ? 'Gratis' :
+                  formatCurrency(totalShippingCost) }}</span>
               </div>
               <div class="flex items-center justify-between text-slate-600">
                 <span>Biaya Layanan</span>
@@ -582,10 +565,6 @@ onMounted(() => {
                 <span>Metode Pembayaran</span>
                 <span class="font-medium text-slate-800">{{ paymentMethodLabel }}</span>
               </div>
-              <div class="flex items-center justify-between text-slate-600">
-                <span>Biaya Layanan</span>
-                <span class="font-medium text-slate-800">{{ formatCurrency(serviceFee) }}</span>
-              </div>
             </div>
 
             <div class="flex items-center justify-between pt-1">
@@ -593,8 +572,9 @@ onMounted(() => {
               <span class="text-lg font-bold text-blue-600">{{ formatCurrency(grandTotal) }}</span>
             </div>
 
-            <Button label="Buat Pesanan" :disabled="!isSuccess || isSubmittingOrder" :loading="isSubmittingOrder"
-              @click="handleCreateOrder"
+            <Button label="Buat Pesanan"
+              :disabled="(shippingMethod === 'kurir' && !isSuccessUpload) || isSubmittingOrder"
+              :loading="isSubmittingOrder" @click="handleCreateOrder"
               class="w-full bg-blue-600! border-blue-600! py-3! text-xs! font-bold! rounded! shadow-sm! hover:bg-blue-700! disabled:opacity-50! disabled:cursor-not-allowed!" />
           </div>
 
@@ -619,7 +599,8 @@ onMounted(() => {
             <span class="min-w-0 flex-1">
               <span class="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-800">
                 {{ address.name }}
-                <span v-if="address.is_default" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Utama</span>
+                <span v-if="address.is_default"
+                  class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Utama</span>
               </span>
               <span class="mt-1 block text-xs text-slate-500">{{ address.phone }}</span>
               <span class="mt-1 block break-words text-xs leading-5 text-slate-600">{{ address.address }}</span>
@@ -632,14 +613,15 @@ onMounted(() => {
         </div>
         <div class="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
           <Button label="Tutup" severity="secondary" outlined @click="isAddressModalOpen = false" />
-          <Button v-if="selectedAddress" label="Edit alamat terpilih" icon="pi pi-pencil" outlined @click="openEditAddress" />
+          <Button v-if="selectedAddress" label="Edit alamat terpilih" icon="pi pi-pencil" outlined
+            @click="openEditAddress" />
           <Button label="Tambah alamat baru" icon="pi pi-plus" @click="openAddAddress" />
         </div>
       </div>
     </Dialog>
 
-    <CODAddressModal v-model:visible="showEditModal" :mode="addressModalMode" :codLocation="addressModalMode === 'edit' ? selectedAddress : null"
-      @saved="loadLocations" />
+    <CODAddressModal v-model:visible="showEditModal" :mode="addressModalMode"
+      :codLocation="addressModalMode === 'edit' ? selectedAddress : null" @saved="loadLocations" />
     <!-- POPUP MODAL SUKSES PESANAN (MOCKUP GAMBAR) -->
     <Dialog v-model:visible="isSuccessModalOpen" modal :closable="false" :style="{ width: '90%', maxWidth: '480px' }"
       class="rounded-3xl! overflow-hidden">

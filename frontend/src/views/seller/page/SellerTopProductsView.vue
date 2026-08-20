@@ -26,11 +26,11 @@ const fetchAllTopProducts = () => {
   isLoadingGet.value = true
   setTimeout(() => {
     allTopProducts.value = [
-      { id: 1, name: 'Kopi Luwak Premium 200g', slug: 'kopi-luwak', total_qty_sold: 145, revenue: 'Rp 4.350.000', profit: 'Rp 1.450.000' },
-      { id: 2, name: 'Batik Tulis Pekalongan', slug: 'batik-tulis', total_qty_sold: 82, revenue: 'Rp 3.690.000', profit: 'Rp 1.100.000' },
-      { id: 3, name: 'Sambal Roa Manado Asli 200g', slug: 'sambal-roa', total_qty_sold: 76, revenue: 'Rp 1.140.000', profit: 'Rp 380.000' },
-      { id: 4, name: 'Rotan Chair Set Minimalis', slug: 'rotan-chair', total_qty_sold: 45, revenue: 'Rp 11.250.000', profit: 'Rp 3.100.000' },
-      { id: 5, name: 'Minyak Kelapa Murni 500ml', slug: 'minyak-kelapa', total_qty_sold: 38, revenue: 'Rp 950.000', profit: 'Rp 280.000' }
+      { id: 1, shop_id: 1, category_id: 1, name: 'Kopi Luwak Premium 200g', slug: 'kopi-luwak', price: '150000', cost_price: '120000', stock: 50, weight: 200, status: 'active', total_sold: 145, total_revenue: 'Rp 4.350.000', profit: 'Rp 1.450.000' },
+      { id: 2, shop_id: 1, category_id: 2, name: 'Batik Tulis Pekalongan', slug: 'batik-tulis', price: '250000', cost_price: '180000', stock: 30, weight: 500, status: 'active', total_sold: 82, total_revenue: 'Rp 3.690.000', profit: 'Rp 1.100.000' },
+      { id: 3, shop_id: 1, category_id: 1, name: 'Sambal Roa Manado Asli 200g', slug: 'sambal-roa', price: '35000', cost_price: '20000', stock: 100, weight: 200, status: 'active', total_sold: 76, total_revenue: 'Rp 1.140.000', profit: 'Rp 380.000' },
+      { id: 4, shop_id: 1, category_id: 3, name: 'Rotan Chair Set Minimalis', slug: 'rotan-chair', price: '750000', cost_price: '500000', stock: 10, weight: 5000, status: 'active', total_sold: 45, total_revenue: 'Rp 11.250.000', profit: 'Rp 3.100.000' },
+      { id: 5, shop_id: 1, category_id: 1, name: 'Minyak Kelapa Murni 500ml', slug: 'minyak-kelapa', price: '45000', cost_price: '30000', stock: 80, weight: 500, status: 'active', total_sold: 38, total_revenue: 'Rp 950.000', profit: 'Rp 280.000' }
     ]
     isLoadingGet.value = false
   }, 800)
@@ -111,8 +111,8 @@ onMounted(() => {
                     </div>
                   </div>
                 </td>
-                <td class="py-4 px-4 text-center font-extrabold text-slate-800">{{ item.total_qty_sold }} Unit</td>
-                <td class="py-4 px-4 font-extrabold text-blue-600">{{ item.revenue }}</td>
+                <td class="py-4 px-4 text-center font-extrabold text-slate-800">{{ item.total_sold }} Unit</td>
+                <td class="py-4 px-4 font-extrabold text-blue-600">{{ item.total_revenue }}</td>
                 <td class="py-4 px-4 font-bold text-emerald-600">{{ item.profit }}</td>
               </tr>
             </tbody>
