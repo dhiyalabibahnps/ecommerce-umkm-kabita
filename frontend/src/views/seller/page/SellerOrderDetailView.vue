@@ -8,7 +8,7 @@ import ProgressSpinner from 'primevue/progressspinner';
 import { useToast } from 'primevue/usetoast';
 
 import OrderStatusBadge from '@/components/ui/OrderStatusBadge.vue';
-import { FLAT_SHIPPING_OPTIONS } from '@/constants/courier';
+import { FLAT_SHIPPING_OPTIONS, formatCourierDisplay, getCourierSelectOptions, resolveCourierOptionValue } from '@/constants/courier';
 import { getApiErrorMessage } from '@/services/apiError';
 import { sellerOrderService } from '@/services/sellerOrderService';
 import { useChatStore } from '@/stores/chat';
@@ -69,7 +69,7 @@ const openShipModal = () => {
     return;
   }
   trackingNumberInput.value = order.value.tracking_number || '';
-  courierInput.value = order.value.courier || 'JNE REG';
+  courierInput.value = resolveCourierOptionValue(order.value.courier);
   shippingModalVisible.value = true;
 };
 
@@ -147,10 +147,9 @@ const formatDate = (value?: string) =>
       })
     : '—';
 
-const courierOptionsForSelect = FLAT_SHIPPING_OPTIONS.map((opt) => ({
-  label: `${opt.courierName} ${opt.serviceCode} (${opt.serviceName})`,
-  value: `${opt.courierName} ${opt.serviceCode}`,
-}));
+const courierOptionsForSelect = computed(() => {
+  return getCourierSelectOptions(order.value?.courier);
+});
 
 onMounted(fetchOrderDetail);
 </script>
@@ -318,13 +317,28 @@ onMounted(fetchOrderDetail);
       class="rounded-2xl!"
     >
       <div class="space-y-4 pt-1">
-        <div class="rounded-xl bg-slate-50 p-3 border border-slate-100 text-xs">
-          <p class="text-slate-500">Nomor Order: <strong class="text-slate-800">{{ order?.order_number }}</strong></p>
-          <p class="text-slate-500 mt-0.5">Tujuan: <span class="text-slate-700">{{ order?.shipping_address }}</span></p>
+        <div class="rounded-xl bg-slate-50 p-3.5 border border-slate-100 text-xs space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">Nomor Order:</span>
+            <strong class="text-slate-800 font-mono">{{ order?.order_number }}</strong>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">Pilihan Kurir Pembeli:</span>
+            <span class="font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded text-[11px]">
+              {{ formatCourierDisplay(order?.courier) }}
+            </span>
+          </div>
+          <div class="flex items-start justify-between gap-2 pt-0.5 border-t border-slate-200/50">
+            <span class="text-slate-500 shrink-0">Alamat Tujuan:</span>
+            <span class="text-slate-700 text-right line-clamp-2">{{ order?.shipping_address }}</span>
+          </div>
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700">Layanan Kurir <span class="text-rose-500">*</span></label>
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-700">Layanan Kurir <span class="text-rose-500">*</span></label>
+            <span class="text-[10px] text-slate-400 font-medium">Otomatis terpilih 1-1 sesuai buyer</span>
+          </div>
           <select
             v-model="courierInput"
             class="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-blue-500 focus:outline-none"

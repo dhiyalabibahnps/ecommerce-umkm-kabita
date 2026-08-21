@@ -51,9 +51,6 @@ class SanitizeInput
     // Remove HTML tags
     $value = strip_tags($value);
 
-    // Convert special characters to HTML entities
-    $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-
     // Trim whitespace
     $value = trim($value);
 

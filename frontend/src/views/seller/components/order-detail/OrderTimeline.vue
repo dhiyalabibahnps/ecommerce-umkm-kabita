@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { OrderStatus } from '@/types';
 import { computed } from 'vue';
+import { formatCourierDisplay } from '@/constants/courier';
 
 const props = defineProps<{
   status: OrderStatus;
@@ -148,7 +149,7 @@ const timelineItems = computed<TimelineItem[]>(() => {
     {
       title: 'Dikirim',
       desc: isShipped
-        ? `Pesanan dikirim via ${props.courier || 'Kurir'}${props.trackingNumber ? ` (Resi: ${props.trackingNumber})` : ''}.`
+        ? `Pesanan dikirim via ${formatCourierDisplay(props.courier)}${props.trackingNumber ? ` (Resi: ${props.trackingNumber})` : ''}.`
         : 'Menunggu penyerahan paket ke kurir & input nomor resi.',
       done: isShipped,
       current: props.status === 'shipped',
