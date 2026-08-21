@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { AnalyticsSalesRow, Order, SellerOverview } from '@/types'
-import Button from 'primevue/button'
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { getApiErrorMessage } from '@/services/apiError'
 import { sellerAnalyticsService } from '@/services/sellerAnalyticsService'
 import { sellerOrderService } from '@/services/sellerOrderService'
-import { getApiErrorMessage } from '@/services/apiError'
+import type { AnalyticsSalesRow, Order, SellerOverview } from '@/types'
+import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const toast = useToast()
@@ -122,7 +122,7 @@ const pendingOrders = ref<Order[]>([])
 onMounted(async () => {
   try {
     const [overview, sales, orders] = await Promise.all([
-      sellerAnalyticsService.getOverview(), sellerAnalyticsService.getSales({ period: 'daily' }), sellerOrderService.list({ status: 'pending', per_page: 5 })
+      sellerAnalyticsService.getOverview(), sellerAnalyticsService.getSales({ period: 'daily' }), sellerOrderService.list({ status: 'awaiting_verification', per_page: 5 })
     ])
     sellerOverview.value = overview
     salesAnalytics.value = sales as AnalyticsSalesRow[]
@@ -138,7 +138,7 @@ const handleProcessOrder = async (orderId: number) => {
 }
 
 const handleOrderDetail = (orderId: number) => {
-  router.push(`/seller/orders/${orderId}`)
+  router.push(`/seller/pesanan/${orderId}`)
 }
 </script>
 
@@ -259,7 +259,7 @@ const handleOrderDetail = (orderId: number) => {
           </div>
 
           <div class="pt-4 mt-2">
-            <button @click="router.push('/seller/orders')"
+            <button @click="router.push('/seller/pesanan')"
               class="w-full py-2.5 text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded-xl transition-colors border border-blue-100 text-center">
               Lihat Semua Pesanan
             </button>
@@ -270,8 +270,8 @@ const handleOrderDetail = (orderId: number) => {
 
       <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-base font-bold text-slate-900">Perlu Tindakan: Pesanan Tertunda</h2>
-          <button @click="router.push('/seller/orders?status=pending')"
+          <h2 class="text-base font-bold text-slate-900">Perlu Tindakan: Pesanan Menunggu Verifikasi</h2>
+          <button @click="router.push('/seller/pesanan?status=awaiting_verification')"
             class="text-xs font-semibold text-blue-600 hover:underline">
             Lihat Semua
           </button>

@@ -131,9 +131,9 @@ class DatabaseSeeder extends Seeder
             'is_default' => true,
         ]);
 
-        $this->createOrder($buyer, $verifiedShop, $approvedProducts[0], OrderStatus::DELIVERED, 'transfer', 'verified');
+        $this->createOrder($buyer, $verifiedShop, $approvedProducts[0], OrderStatus::COMPLETED, 'transfer', 'verified');
         $this->createOrder($buyer, $verifiedShop, $approvedProducts[1], OrderStatus::PROCESSING, 'transfer', 'pending');
-        $this->createOrder($buyer, $verifiedShop, $approvedProducts[2], OrderStatus::PENDING, 'cod', 'pending');
+        $this->createOrder($buyer, $verifiedShop, $approvedProducts[2], OrderStatus::AWAITING_VERIFICATION, 'cod', 'pending');
 
         PaymentSetting::create([
             'bank_name' => 'Bank Kabita',
@@ -180,7 +180,7 @@ class DatabaseSeeder extends Seeder
             'payment_method' => $paymentMethod,
             'status' => $status,
             'shipping_address' => $buyer->address,
-            'tracking_number' => $status === OrderStatus::SHIPPED || $status === OrderStatus::DELIVERED ? 'KABITA-DEMO-001' : null,
+            'tracking_number' => $status === OrderStatus::SHIPPED || $status === OrderStatus::COMPLETED ? 'KABITA-DEMO-001' : null,
         ]);
         OrderItem::create([
             'order_id' => $order->id,

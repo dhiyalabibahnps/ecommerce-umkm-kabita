@@ -1,17 +1,20 @@
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/auth'
 import Button from 'primevue/button'
-import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const isSidebarOpen = ref(false)
+console.log("[DEBUG] authStore : ", authStore.user)
 
-const currentAdmin = computed(() => authStore.user)
+const authStoreUser = computed(() => authStore.user)
+const currentAdmin = authStoreUser.value;
+
+console.log("[DEBUG] currentAdmin : ", currentAdmin)
 
 // Menu Navigasi khusus Admin Internal
 const sidebarMenus = ref([
@@ -54,11 +57,10 @@ watch(() => route.path, () => {
     <button v-if="isSidebarOpen" type="button" aria-label="Tutup menu"
       class="fixed inset-0 z-30 bg-slate-950/50 lg:hidden" @click="isSidebarOpen = false" />
 
-    <aside
-      :class="[
-        'fixed inset-y-0 left-0 z-40 flex h-dvh w-72 max-w-[85vw] -translate-x-full flex-col justify-between overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-300 shadow-xl transition-transform duration-200 lg:static lg:z-auto lg:w-64 lg:translate-x-0',
-        isSidebarOpen ? 'translate-x-0' : ''
-      ]">
+    <aside :class="[
+      'fixed inset-y-0 left-0 z-40 flex h-dvh w-72 max-w-[85vw] -translate-x-full flex-col justify-between overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-300 shadow-xl transition-transform duration-200 lg:static lg:z-auto lg:w-64 lg:translate-x-0',
+      isSidebarOpen ? 'translate-x-0' : ''
+    ]">
       <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <div class="flex h-16 items-center gap-3 border-b border-slate-800 bg-slate-950/50 px-5 sm:px-6">
           <div
@@ -101,8 +103,7 @@ watch(() => route.path, () => {
             </div>
           </div>
           <Button icon="pi pi-sign-out" text rounded severity="secondary"
-            class="text-slate-400! hover:text-red-400! w-8! h-8! p-0!" v-tooltip.top="'Keluar'"
-            @click="handleLogout" />
+            class="text-slate-400! hover:text-red-400! w-8! h-8! p-0!" v-tooltip.top="'Keluar'" @click="handleLogout" />
         </div>
       </div>
     </aside>
@@ -112,40 +113,41 @@ watch(() => route.path, () => {
         class="flex min-h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 shadow-xs z-10 sm:px-6 lg:px-8">
         <div>
           <div class="flex items-center gap-3">
-            <Button icon="pi pi-bars" text rounded aria-label="Buka menu"
-              class="lg:hidden! text-slate-700!" @click="isSidebarOpen = true" />
+            <Button icon="pi pi-bars" text rounded aria-label="Buka menu" class="lg:hidden! text-slate-700!"
+              @click="isSidebarOpen = true" />
             <h2 class="text-base font-bold tracking-tight text-slate-800 sm:text-xl">{{ currentTitle }}</h2>
           </div>
         </div>
 
         <div class="flex items-center gap-2 sm:gap-4">
-          <div class="relative hidden w-64 md:block">
+          <!-- <div class="relative hidden w-64 md:block">
             <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
             <InputText placeholder="Cari data sistem..."
               class="w-full pl-10! pr-4! py-2! bg-slate-50! border-slate-200! rounded-full! text-sm! focus:bg-white! focus:ring-2! focus:ring-blue-500/20!" />
-          </div>
+          </div> -->
 
-          <Button icon="pi pi-bell" severity="secondary" text rounded
+          <!-- <Button icon="pi pi-bell" severity="secondary" text rounded
             class="relative! text-slate-600! hover:bg-slate-100!">
             <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500"></span>
-          </Button>
+          </Button> -->
 
           <div class="flex items-center gap-2 border-l border-slate-200 pl-2 sm:gap-2.5 sm:pl-3">
-            <template>
-              <div
-                class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-xs">
-                {{ (currentAdmin?.name || 'Admin').slice(0, 2).toUpperCase() }}
-              </div>
-              <div class="flex flex-col">
-                <span class="hidden text-xs font-semibold leading-none text-slate-800 sm:block">{{ currentAdmin?.name }}</span>
-                <span class="hidden text-[10px] font-semibold uppercase text-blue-600 mt-0.5 sm:block">Admin Internal</span>
-              </div>
-            </template>
+            <div
+              class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shadow-xs">
+              {{ (currentAdmin?.name || 'Admin').slice(0, 2).toUpperCase() }}
+            </div>
+            <div class="flex flex-col">
+              <span class="hidden text-xs font-semibold leading-none text-slate-800 sm:block">{{ currentAdmin?.name
+                }}</span>
+              <span class="hidden text-[10px] font-semibold uppercase text-blue-600 mt-0.5 sm:block">Admin
+                Internal</span>
+            </div>
           </div>
         </div>
       </header>
 
-      <main class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-slate-50/50 p-4 sm:p-6 lg:p-8">
+      <main
+        class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-slate-50/50 p-4 sm:p-6 lg:p-8">
         <slot>
           <router-view />
         </slot>

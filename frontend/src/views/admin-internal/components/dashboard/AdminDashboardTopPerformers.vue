@@ -31,7 +31,7 @@ const formatRupiah = (val: string | number) => {
               {{ idx + 1 }}
             </span>
             <div>
-              <p class="text-sm font-bold text-slate-800">{{ seller.name }}</p>
+              <p class="text-sm font-bold text-slate-800">{{ seller.shop?.name || seller.seller?.name || '-' }}</p>
               <p class="text-xs text-slate-500">{{ seller.total_orders }} Pesanan Selesai</p>
             </div>
           </div>
@@ -56,7 +56,7 @@ const formatRupiah = (val: string | number) => {
             </span>
             <div>
               <p class="text-sm font-bold text-slate-800 line-clamp-1">{{ prod.name }}</p>
-              <p class="text-xs text-slate-500">{{ prod.total_qty_sold }} Terjual</p>
+              <p class="text-xs text-slate-500">{{ prod.total_sold }} Terjual</p>
             </div>
           </div>
           <span class="text-sm font-bold text-emerald-600">{{ formatRupiah(prod.price) }}</span>

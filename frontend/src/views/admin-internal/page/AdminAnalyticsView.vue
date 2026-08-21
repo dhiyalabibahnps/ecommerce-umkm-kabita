@@ -6,15 +6,35 @@ import * as XLSX from 'xlsx';
 import html2pdf from 'html2pdf.js';
 
 // Import Child Components
-import { useToast } from 'primevue/usetoast';
-import AdminAnalyticsHeader from '../components/analytics/AdminAnalyticsHeader.vue';
-import AdminAnalyticsStatCards, { type StatMetric } from '../components/analytics/AdminAnalyticsStatCards.vue';
-import AdminCategoryRevenueChart from '../components/analytics/AdminCategoryRevenueChart.vue';
-import AdminDailySalesChart from '../components/analytics/AdminDailySalesChart.vue';
-import AdminTopProductsTable, { type TopProductItem } from '../components/analytics/AdminTopProductsTable.vue';
-import AdminTopShopsChart from '../components/analytics/AdminTopShopsChart.vue';
 import { adminAnalyticsService } from '@/services/adminAnalyticsService';
 import { getApiErrorMessage } from '@/services/apiError';
+import type { SalesRow, TopSeller } from '@/types/entities';
+import { useToast } from 'primevue/usetoast';
+import { defineAsyncComponent } from 'vue';
+
+const AdminAnalyticsHeader = defineAsyncComponent(() => import('../components/analytics/AdminAnalyticsHeader.vue'))
+const AdminAnalyticsStatCards = defineAsyncComponent(() => import('../components/analytics/AdminAnalyticsStatCards.vue'))
+const AdminCategoryRevenueChart = defineAsyncComponent(() => import('../components/analytics/AdminCategoryRevenueChart.vue'))
+const AdminDailySalesChart = defineAsyncComponent(() => import('../components/analytics/AdminDailySalesChart.vue'))
+const AdminTopProductsTable = defineAsyncComponent(() => import('../components/analytics/AdminTopProductsTable.vue'))
+const AdminTopShopsChart = defineAsyncComponent(() => import('../components/analytics/AdminTopShopsChart.vue'))
+
+interface StatMetric {
+  title: string
+  value: string
+  percentage: string
+  isPositive: boolean
+  icon: string
+}
+
+interface TopProductItem {
+  rank: number
+  productName: string
+  shopName: string
+  qtySold: number
+  revenue: string
+  profit: string
+}
 
 const isLoading = ref<boolean>(true);
 const analyticsContainer = ref<HTMLElement | null>(null);
@@ -25,6 +45,16 @@ const topProducts = ref<TopProductItem[]>([]);
 const categoryRevenue = ref<Array<{ name: string; revenue: string }>>([])
 const topSellers = ref<Array<{ name: string; total_revenue: string }>>([])
 const sales = ref<Array<{ date: string; revenue: string }>>([])
+
+const mapTopSeller = (seller: TopSeller) => ({
+  name: seller.shop?.name || seller.seller?.name || '-',
+  total_revenue: seller.total_revenue,
+})
+
+const mapSalesRow = (row: SalesRow) => ({
+  date: row.date,
+  revenue: row.total_revenue,
+})
 
 const formatMoney = (value: string | number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value) || 0)
 
@@ -39,8 +69,8 @@ const fetchAnalyticsData = async () => {
       adminAnalyticsService.getSales('monthly'),
     ])
     categoryRevenue.value = categories
-    topSellers.value = sellers
-    sales.value = salesRows
+    topSellers.value = sellers.map(mapTopSeller)
+    sales.value = salesRows.map(mapSalesRow)
     const orders = platform.monthly_transactions.reduce((sum, row) => sum + row.transactions, 0)
     const revenue = Number(platform.platform_revenue)
     statCards.value = [
@@ -71,7 +101,7 @@ const handleExportExcel = () => {
     const statsSheet = XLSX.utils.json_to_sheet(statsData);
 
     // 2. Buat Sheet Top Produk
-    const productsData = topProducts.value.map(p => ({
+    const productsData = topProducts.value.map((p: TopProductItem) => ({
       'Peringkat': p.rank,
       'Nama Produk': p.productName,
       'Nama Toko': p.shopName,

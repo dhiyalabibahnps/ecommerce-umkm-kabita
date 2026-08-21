@@ -44,7 +44,8 @@ class ProductController extends Controller
     ]));
 
     $products = Cache::remember($cacheKey, 300, function () use ($request) {
-      $query = Product::where('status', 'approved')
+      $query = Product::query()
+        ->where('status', 'approved')
         ->with(['shop', 'category', 'images']);
 
       // Search by name
@@ -99,13 +100,14 @@ class ProductController extends Controller
    *
    * @unauthenticated
    * @param string $slug Product slug
-   * @response 200 body="{"success":true,"data":{}}"
+   * @response 200 body="{"success":true,"data":{ "id": 1, "name": "Fashion" }}"
    * @response 404 body="{"success":false,"message":"Produk tidak ditemukan."}"
    */
   public function show(string $slug): JsonResponse
   {
     $product = Cache::remember("public_product_{$slug}", 300, function () use ($slug) {
-      return Product::where('slug', $slug)
+      return Product::query()
+        ->where('slug', $slug)
         ->where('status', 'approved')
         ->with(['shop', 'category', 'images'])
         ->first();

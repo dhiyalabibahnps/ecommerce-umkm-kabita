@@ -7,9 +7,11 @@ namespace App\Http\Controllers\Api\Seller;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Seller\IndexOrderRequest;
+use App\Http\Requests\Seller\PackOrderRequest;
 use App\Http\Requests\Seller\ProcessOrderRequest;
 use App\Http\Requests\Seller\ShipOrderRequest;
 use App\Http\Resources\OrderResource;
+use App\Models\Notification;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 
@@ -98,17 +100,15 @@ class OrderController extends Controller
   }
 
   /**
-   * Process order from pending to processing
-   * Validates that payment is verified before processing.
+   * Process order from processing (dikonfirmasi) to packed (dikemas)
    *
    * @authenticated
    * @response 200 body="{"success":true,"data":{},"message":"Order berhasil diproses."}"
    * @response 403 body="{"success":false,"message":"Akses ditolak. Order ini bukan milik toko Anda."}"
-   * @response 422 body="{"success":false,"message":"Hanya order dengan status pending yang dapat diproses."}"
+   * @response 422 body="{"success":false,"message":"Hanya order dengan status dikonfirmasi yang dapat diproses."}"
    */
   public function process(ProcessOrderRequest $request, Order $order): JsonResponse
   {
-    // Check if order belongs to seller's shop
     if ($order->shop->seller_id !== auth()->id()) {
       return response()->json([
         'success' => false,
@@ -116,46 +116,32 @@ class OrderController extends Controller
       ], 403);
     }
 
-    // Validate current status is pending
-    if ($order->status !== OrderStatus::PENDING) {
+    if ($order->status !== OrderStatus::PROCESSING) {
       return response()->json([
         'success' => false,
-        'message' => 'Hanya order dengan status pending yang dapat diproses.',
+        'message' => 'Hanya order dengan status dikonfirmasi yang dapat diproses.',
       ], 422);
     }
 
-    // Validate payment is verified
-    if (!$order->payment || $order->payment->status !== 'verified') {
-      return response()->json([
-        'success' => false,
-        'message' => 'Pembayaran belum diverifikasi.',
-      ], 422);
-    }
-
-    // Update order status
-    $order->update(['status' => OrderStatus::PROCESSING]);
+    $order->update(['status' => OrderStatus::PACKED]);
 
     return response()->json([
       'success' => true,
       'data' => new OrderResource($order),
-      'message' => 'Order berhasil diproses.',
+      'message' => 'Order berhasil diproses ke status dikemas.',
     ]);
   }
 
   /**
-   * Ship order from processing to shipped
-   * Accepts optional tracking number for courier shipping.
+   * Pack order from processing to packed
    *
    * @authenticated
-   * @requestBody required
-   * @bodyParam tracking_number string "Tracking number for courier" example=JNE123456789
-   * @response 200 body="{"success":true,"data":{},"message":"Order berhasil dikirim."}"
+   * @response 200 body="{"success":true,"data":{},"message":"Order berhasil dikemas."}"
    * @response 403 body="{"success":false,"message":"Akses ditolak. Order ini bukan milik toko Anda."}"
-   * @response 422 body="{"success":false,"message":"Hanya order dengan status processing yang dapat dikirim."}"
+   * @response 422 body="{"success":false,"message":"Hanya order dengan status processing yang dapat dikemas."}"
    */
-  public function ship(ShipOrderRequest $request, Order $order): JsonResponse
+  public function pack(PackOrderRequest $request, Order $order): JsonResponse
   {
-    // Check if order belongs to seller's shop
     if ($order->shop->seller_id !== auth()->id()) {
       return response()->json([
         'success' => false,
@@ -163,29 +149,135 @@ class OrderController extends Controller
       ], 403);
     }
 
-    // Validate current status is processing
     if ($order->status !== OrderStatus::PROCESSING) {
       return response()->json([
         'success' => false,
-        'message' => 'Hanya order dengan status processing yang dapat dikirim.',
+        'message' => 'Hanya order dengan status processing yang dapat dikemas.',
       ], 422);
     }
 
-    // Prepare update data
-    $updateData = ['status' => OrderStatus::SHIPPED];
+    $order->update(['status' => OrderStatus::PACKED]);
 
-    // Add tracking number if provided
-    if ($request->filled('tracking_number')) {
-      $updateData['tracking_number'] = $request->tracking_number;
+    if ($order->buyer_id) {
+      Notification::create([
+        'user_id' => $order->buyer_id,
+        'type' => 'order',
+        'title' => 'Pesanan Sedang Dikemas',
+        'message' => "Pesanan {$order->order_number} sedang dikemas oleh penjual dan disiapkan untuk pengiriman.",
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'url' => "/order-detail?id={$order->id}",
+        ],
+        'is_read' => false,
+      ]);
     }
 
-    // Update order status
-    $order->update($updateData);
+    return response()->json([
+      'success' => true,
+      'data' => new OrderResource($order),
+      'message' => 'Order berhasil dikemas.',
+    ]);
+  }
+
+  /**
+   * Ship order from packed to shipped
+   * Requires tracking number for courier shipping.
+   *
+   * @authenticated
+   * @requestBody required
+   * @bodyParam tracking_number string required "Tracking number for courier" example=JNE123456789
+   * @response 200 body="{"success":true,"data":{},"message":"Order berhasil dikirim."}"
+   * @response 403 body="{"success":false,"message":"Akses ditolak. Order ini bukan milik toko Anda."}"
+   * @response 422 body="{"success":false,"message":"Hanya order dengan status packed yang dapat dikirim."}"
+   */
+  public function ship(ShipOrderRequest $request, Order $order): JsonResponse
+  {
+    if ($order->shop->seller_id !== auth()->id()) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Akses ditolak. Order ini bukan milik toko Anda.',
+      ], 403);
+    }
+
+    if ($order->status !== OrderStatus::PACKED) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Hanya order dengan status packed yang dapat dikirim.',
+      ], 422);
+    }
+
+    if ($order->shipping_method === 'kurir' && !$request->filled('tracking_number')) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Nomor resi wajib diisi sebelum mengirim.',
+      ], 422);
+    }
+
+    $courierName = $request->input('courier', $order->courier) ?? 'Kurir Ekspedisi';
+    $trackingNum = $request->input('tracking_number');
+
+    $order->update([
+      'status' => OrderStatus::SHIPPED,
+      'tracking_number' => $trackingNum,
+      'courier' => $courierName,
+    ]);
+
+    if ($order->buyer_id) {
+      $resiMsg = $trackingNum ? " via {$courierName} dengan no. resi {$trackingNum}" : "";
+      Notification::create([
+        'user_id' => $order->buyer_id,
+        'type' => 'order',
+        'title' => 'Pesanan Sedang Dikirim',
+        'message' => "Pesanan {$order->order_number} telah dikirim{$resiMsg}. Lacak pengiriman Anda di halaman detail pesanan.",
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'courier' => $courierName,
+          'tracking_number' => $trackingNum,
+          'url' => "/order-detail?id={$order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
 
     return response()->json([
       'success' => true,
       'data' => new OrderResource($order),
       'message' => 'Order berhasil dikirim.',
+    ]);
+  }
+
+  /**
+   * Confirm COD meeting from cod_meeting to completed
+   *
+   * @authenticated
+   * @response 200 body="{"success":true,"data":{},"message":"Pesanan COD berhasil diselesaikan."}"
+   * @response 403 body="{"success":false,"message":"Akses ditolak. Order ini bukan milik toko Anda."}"
+   * @response 422 body="{"success":false,"message":"Hanya order COD dengan status ketemuan yang dapat diselesaikan."}"
+   */
+  public function codComplete(Order $order): JsonResponse
+  {
+    if ($order->shop->seller_id !== auth()->id()) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Akses ditolak. Order ini bukan milik toko Anda.',
+      ], 403);
+    }
+
+    if ($order->status !== OrderStatus::COD_MEETING || $order->shipping_method !== 'cod') {
+      return response()->json([
+        'success' => false,
+        'message' => 'Hanya order COD dengan status ketemuan yang dapat diselesaikan.',
+      ], 422);
+    }
+
+    $order->update(['status' => OrderStatus::COMPLETED]);
+
+    return response()->json([
+      'success' => true,
+      'data' => new OrderResource($order),
+      'message' => 'Pesanan COD berhasil diselesaikan.',
     ]);
   }
 }

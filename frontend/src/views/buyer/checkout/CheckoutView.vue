@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FLAT_SHIPPING_OPTIONS, type FlatShippingOption } from '@/constants/courier'
 import CODAddressModal from '@/components/cod/CODAddressModal.vue'
 import { buyerPaymentService } from '@/services/buyerPaymentService'
 import { checkoutService } from '@/services/checkoutService'
@@ -9,6 +10,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
 import Select from 'primevue/select'
+import Textarea from 'primevue/textarea'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -34,6 +36,25 @@ const flatItems = computed(() => {
       }))
     )
   )
+})
+
+const groupsByShop = computed(() => {
+  const map = new Map<number, { shop: any; items: typeof flatItems.value }>()
+  for (const item of flatItems.value) {
+    const shopId = item.shop?.id || 0
+    if (!map.has(shopId)) {
+      map.set(shopId, {
+        shop: item.shop,
+        items: [],
+      })
+    }
+    map.get(shopId)!.items.push(item)
+  }
+  return Array.from(map.values())
+})
+
+const totalQuantity = computed(() => {
+  return flatItems.value.reduce((sum, item) => sum + item.quantity, 0)
 })
 
 const setShipping = (itemId: number, value: string) => {
@@ -134,38 +155,25 @@ const saveNewAddress = async () => {
 }
 
 // Data Pengiriman & Pesanan
-const shippingOptions = [
-  { label: 'Reguler (2-3 hari) - Rp 15.000', value: 'reguler_15' },
-  { label: 'Reguler (2-3 hari) - Rp 20.000', value: 'reguler_20' },
-  { label: 'Kargo (3-5 hari) - Rp 30.000', value: 'cargo_30' }
-]
+const courierOptions = FLAT_SHIPPING_OPTIONS
+const defaultCourierOption = FLAT_SHIPPING_OPTIONS[0]!
+const selectedCourierKey = ref(defaultCourierOption.key)
+const buyerNotes = ref('')
+
+const selectedCourierObj = computed<FlatShippingOption>(() => {
+  return courierOptions.find(c => c.key === selectedCourierKey.value) ?? defaultCourierOption
+})
 
 const paymentOptions = [
   { label: 'Transfer Bank Manual', value: 'transfer' },
-  { label: 'COD', value: 'cod' }
+  { label: 'COD (Ketemuan)', value: 'cod' }
 ]
-
-const selectedShippingValue = computed(() => {
-  const first = flatItems.value[0]?.selectedShipping
-  return typeof first === 'string' ? first : 'reguler_15'
-})
-
-const shippingLabel = computed(() => {
-  const option = shippingOptions.find((item) => item.value === selectedShippingValue.value)
-  return option?.label ?? 'Reguler'
-})
-
-const shippingMethod = computed<'kurir' | 'cod'>(() => (selectedShippingValue.value.startsWith('cargo') ? 'kurir' : 'kurir'))
-
-const orderNotes = computed(() => {
-  const labels = flatItems.value.map((item) => item.selectedShipping).filter(Boolean)
-  const unique = Array.from(new Set(labels))
-  return unique.length ? `Ongkir: ${unique.join(', ')}` : null
-})
 
 const selectedPaymentMethod = ref<'transfer' | 'cod'>('transfer')
 
-const paymentMethodLabel = computed(() => (selectedPaymentMethod.value === 'cod' ? 'COD' : 'Transfer Bank Manual'))
+const shippingMethod = computed<'kurir' | 'cod'>(() => (selectedPaymentMethod.value === 'cod' ? 'cod' : 'kurir'))
+
+const paymentMethodLabel = computed(() => (selectedPaymentMethod.value === 'cod' ? 'COD (Ketemuan)' : 'Transfer Bank Manual'))
 
 const paymentInfo = ref({
   bankName: 'Bank BCA',
@@ -187,18 +195,18 @@ const formatCurrency = (val: number) => {
 
 // Total Calc
 const totalItemsPrice = computed(() => {
-  return flatItems.value.reduce((sum, g) => sum + (g.product?.price as number) * g.quantity, 0)
+  return flatItems.value.reduce((sum, g) => sum + (Number(g.product?.price) || 0) * g.quantity, 0)
 })
-const totalShippingCost = 35000
-const serviceFee = 2500
-const grandTotal = computed(() => totalItemsPrice.value + totalShippingCost + serviceFee)
+const totalShippingCost = computed(() => (selectedPaymentMethod.value === 'cod' ? 0 : selectedCourierObj.value.cost))
+const grandTotal = computed(() => totalItemsPrice.value + totalShippingCost.value)
 
 // --- STATE & SIMULASI UPLOAD BUKTI TRANSFER ---
 const fileInput = ref<HTMLInputElement | null>(null)
 const previewImage = ref<string | null>(null)
+const selectedFile = ref<File | null>(null)
 const isUploading = ref(false)
 const uploadProgress = ref(0)
-const isSuccess = ref(false)
+const isSuccessUpload = ref(false)
 
 const triggerFileInput = () => {
   fileInput.value?.click()
@@ -223,29 +231,28 @@ const processUpload = (file: File) => {
     return
   }
 
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Ukuran file maksimal 2MB')
+    return
+  }
+
   const reader = new FileReader()
   reader.onload = (e) => {
     previewImage.value = e.target?.result as string
   }
   reader.readAsDataURL(file)
 
-  isUploading.value = true
-  isSuccess.value = false
-  uploadProgress.value = 0
+  selectedFile.value = file
 
-  const interval = setInterval(() => {
-    uploadProgress.value += 20
-    if (uploadProgress.value >= 100) {
-      clearInterval(interval)
-      isUploading.value = false
-      isSuccess.value = true
-    }
-  }, 200)
+  isUploading.value = false
+  isSuccessUpload.value = true
+  uploadProgress.value = 100
 }
 
 const removeImage = () => {
   previewImage.value = null
-  isSuccess.value = false
+  selectedFile.value = null
+  isSuccessUpload.value = false
   uploadProgress.value = 0
   if (fileInput.value) {
     fileInput.value.value = ''
@@ -253,34 +260,31 @@ const removeImage = () => {
 }
 
 // --- SIMULASI GET DATA DARI API ---
-const fetchCheckoutData = () => {
+const loadPaymentSettings = async () => {
+  try {
+    const data = await buyerPaymentService.getPaymentSettings()
+    if (data) {
+      paymentInfo.value = {
+        bankName: data.bank_name,
+        accountNumber: data.account_number,
+        accountHolder: data.account_holder_name
+      }
+    }
+  } catch (error) {
+    console.error('Gagal memuat pengaturan pembayaran', error)
+  }
+}
+
+const fetchCheckoutData = async () => {
   isLoadingPage.value = true
-  loadLocations();
-  setTimeout(() => {
-
-    // orderGroups.value = [
-    //   {
-    //     storeName: 'Toko Kopi Lokal',
-    //     productName: 'Biji Kopi Arabika Gayo - 250g',
-    //     variant: 'Medium Roast',
-    //     price: 85000,
-    //     qty: 1,
-    //     image: 'https://primefaces.org/cdn/primevue/images/galleria/galleria1.jpg',
-    //     selectedShipping: 'reguler_15'
-    //   },
-    //   {
-    //     storeName: 'Kerajinan Tangan Jabar',
-    //     productName: 'Keranjang Anyaman Rotan Premium',
-    //     variant: 'Ukuran: Sedang',
-    //     price: 45000,
-    //     qty: 2,
-    //     image: 'https://primefaces.org/cdn/primevue/images/galleria/galleria2.jpg',
-    //     selectedShipping: 'reguler_20'
-    //   }
-    // ]
-
+  try {
+    await Promise.allSettled([
+      loadLocations(),
+      loadPaymentSettings()
+    ])
+  } finally {
     isLoadingPage.value = false
-  }, 1000)
+  }
 }
 
 
@@ -306,14 +310,20 @@ const handleCreateOrder = async () => {
   isSubmittingOrder.value = true
 
   try {
+    const isCod = selectedPaymentMethod.value === 'cod'
+    const isExpress = ['YES', 'BEST', 'SUPER', 'NDS', 'EXPRESS', 'FAST'].includes(selectedCourierObj.value.serviceCode)
     const payload: Parameters<typeof checkoutService.checkout>[0] = {
       // Laravel checkout validates cart_items against cart_items.id,
       // not products.id.
       cart_items: flatItems.value.map((item) => item.id),
-      shipping_method: shippingMethod.value,
+      shipping_method: isCod ? 'cod' : 'kurir',
+      courier: isCod ? null : selectedCourierObj.value.fullCourierLabel,
+      courier_type: isCod ? null : (isExpress ? 'express' : 'reguler'),
+      shipping_cost: isCod ? 0 : selectedCourierObj.value.cost,
       payment_method: selectedPaymentMethod.value,
       shipping_address: activeAddress.value.address ?? '',
-      notes: orderNotes.value
+      location_id: activeAddress.value.id || undefined,
+      notes: buyerNotes.value?.trim() || null
     }
 
     const order = await checkoutService.checkout(payload)
@@ -324,10 +334,11 @@ const handleCreateOrder = async () => {
     await cartStore.loadCart()
     localStorage.removeItem('checkoutItems')
 
-    if (previewImage.value && order.id) {
+    const paymentId = order.payment?.id ?? order.id
+    if (selectedFile.value && paymentId) {
       try {
-        await buyerPaymentService.uploadProof(order.id, {
-          proof_image: previewImage.value as any
+        await buyerPaymentService.uploadProof(paymentId, {
+          proof_image: selectedFile.value
         })
       } catch (uploadError) {
         console.error('Gagal mengunggah bukti transfer', uploadError)
@@ -375,7 +386,7 @@ onMounted(() => {
     </div>
 
     <!-- KONTEN UTAMA DITAMPILKAN SETELAH LOADING -->
-    <div v-else class="max-w-7xl mx-auto space-y-6">
+    <div v-else class="max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto space-y-6">
 
       <!-- Top Bar Navigation -->
       <div class="flex items-center justify-between gap-3 text-xs text-slate-600">
@@ -383,10 +394,6 @@ onMounted(() => {
           <i class="pi pi-arrow-left text-xs"></i>
           <span>Kembali</span>
         </router-link>
-        <div class="flex items-center gap-1.5 text-slate-500 font-medium">
-          <i class="pi pi-lock text-xs"></i>
-          <span class="hidden sm:inline">Checkout Keamanan SSL</span>
-        </div>
       </div>
 
       <!-- Main Layout Grid -->
@@ -402,7 +409,8 @@ onMounted(() => {
                 <i class="pi pi-map-marker text-blue-600"></i>
                 <h2>Alamat Pengiriman</h2>
               </div>
-              <button @click="isAddressModalOpen = true" class="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50">
+              <button @click="isAddressModalOpen = true"
+                class="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50">
                 Ubah Alamat
               </button>
             </div>
@@ -417,42 +425,122 @@ onMounted(() => {
 
           <!-- Section 2: Ringkasan Pesanan -->
           <div class="space-y-5 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6">
-            <div class="flex items-center gap-2 font-bold text-slate-800 text-sm pb-4 border-b border-slate-100">
-              <i class="pi pi-shopping-bag text-blue-600"></i>
-              <h2>Ringkasan Pesanan</h2>
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div class="flex items-center gap-2 font-bold text-slate-800 text-sm">
+                <i class="pi pi-shopping-bag text-blue-600"></i>
+                <h2>Ringkasan Pesanan</h2>
+              </div>
+              <span class="text-xs text-slate-500 font-medium">
+                {{ flatItems.length }} Produk ({{ totalQuantity }} item)
+              </span>
             </div>
 
             <!-- List Toko & Barang -->
-            <div v-for="(group, idx) in flatItems" :key="idx"
-              class="space-y-4 pb-6 border-b border-slate-100 last:border-0 last:pb-0">
-              <div class="flex min-w-0 items-center gap-2 text-xs font-bold text-slate-700">
-                <i class="pi pi-shop text-slate-400"></i>
-                <span class="truncate">{{ group.shop?.name }}</span>
+            <div class="space-y-4">
+              <div v-for="(group, gIdx) in groupsByShop" :key="gIdx"
+                class="rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 space-y-3">
+                <div class="flex min-w-0 items-center gap-2 text-xs font-bold text-slate-700">
+                  <i class="pi pi-shop text-blue-600"></i>
+                  <span class="truncate">{{ group.shop?.name || 'Toko' }}</span>
+                </div>
+
+                <div class="divide-y divide-slate-100">
+                  <div v-for="item in group.items" :key="item.id"
+                    class="flex min-w-0 items-start gap-3 sm:gap-4 py-2.5 first:pt-0 last:pb-0">
+                    <div
+                      class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-white text-[10px] text-slate-400">
+                      <img v-if="item.product?.images?.[0]?.url" :src="item.product.images[0].url!"
+                        :alt="item.product?.name" class="h-full w-full object-cover" />
+                      <span v-else>Tanpa gambar</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-xs font-bold text-slate-800 truncate">{{ item.product?.name }}</h3>
+                      <p class="text-xs text-slate-500 mt-1">
+                        {{ item.quantity }} x {{ formatCurrency(item.product?.price as number) }}
+                      </p>
+                    </div>
+                    <div class="shrink-0 text-right text-xs font-bold text-slate-800">
+                      {{ formatCurrency((item.product?.price as number) * item.quantity) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section Pengiriman -->
+            <div v-if="selectedPaymentMethod !== 'cod'" class="min-w-0 space-y-2 rounded-xl border border-blue-100 bg-blue-50/40 p-3.5">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <i class="pi pi-truck text-blue-600"></i>
+                  Pilih Layanan Pengiriman Kurir
+                </label>
+                <span class="text-[10px] text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-full font-semibold">
+                  {{ selectedCourierObj.courierName }} {{ selectedCourierObj.serviceCode }}
+                </span>
               </div>
 
-              <div class="flex min-w-0 items-start gap-3 sm:gap-4">
-                <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 text-[10px] text-slate-400">
-                  <img v-if="group.product?.images?.[0]?.url" :src="group.product.images[0].url!" :alt="group.product?.name"
-                    class="h-full w-full object-cover" />
-                  <span v-else>Tanpa gambar</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h3 class="text-xs font-bold text-slate-800 truncate">{{ group.product?.name }}</h3>
-                  <p class="text-xs text-slate-500 mt-2">
-                    {{ group.quantity }} x {{ formatCurrency(group.product?.price as number) }}
-                  </p>
-                </div>
-                <div class="shrink-0 text-right text-xs font-bold text-slate-800">
-                  {{ formatCurrency(group.product?.price as number * group.quantity) }}
-                </div>
-              </div>
+              <Select
+                v-model="selectedCourierKey"
+                :options="courierOptions"
+                optionValue="key"
+                class="w-full min-w-0! text-xs! bg-white! rounded-lg!"
+              >
+                <template #value="slotProps">
+                  <div v-if="slotProps.value" class="flex items-center justify-between w-full pr-2 text-xs">
+                    <div>
+                      <strong class="text-slate-800">{{ selectedCourierObj.courierName }}</strong>
+                      <span class="text-slate-500 ml-1.5">({{ selectedCourierObj.serviceCode }} - {{ selectedCourierObj.serviceName }})</span>
+                      <span class="text-[11px] text-slate-400 ml-1.5">• {{ selectedCourierObj.etd }}</span>
+                    </div>
+                    <span class="font-bold text-blue-600 shrink-0">Rp {{ selectedCourierObj.cost.toLocaleString('id-ID') }}</span>
+                  </div>
+                </template>
+                <template #option="slotProps">
+                  <div class="flex items-center justify-between w-full py-1 text-xs">
+                    <div class="min-w-0 pr-2">
+                      <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <span>{{ slotProps.option.courierName }}</span>
+                        <span class="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                          {{ slotProps.option.serviceCode }}
+                        </span>
+                        <span class="font-normal text-slate-500">({{ slotProps.option.serviceName }})</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                        <i class="pi pi-clock text-[10px]"></i>
+                        <span>Estimasi {{ slotProps.option.etd }}</span>
+                      </div>
+                    </div>
+                    <span class="font-bold text-blue-600 shrink-0">
+                      Rp {{ slotProps.option.cost.toLocaleString('id-ID') }}
+                    </span>
+                  </div>
+                </template>
+              </Select>
+            </div>
 
-              <div class="min-w-0 space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
-                <label class="text-[11px] text-slate-500 block">Pilih Pengiriman</label>
-                <Select :modelValue="group.selectedShipping" :options="shippingOptions" optionLabel="label"
-                  optionValue="value" class="w-full min-w-0! text-xs! bg-white! rounded-lg!"
-                  @update:modelValue="setShipping(group.id, $event)" />
+            <div v-else class="min-w-0 space-y-1 rounded-xl border border-amber-100 bg-amber-50/50 p-3 text-xs text-amber-800">
+              <div class="flex items-center gap-1.5 font-bold">
+                <i class="pi pi-map-marker text-amber-600"></i>
+                <span>Metode COD (Ketemuan Langsung)</span>
               </div>
+              <p class="text-[11px] text-amber-700 leading-relaxed">
+                Bebas biaya ongkir. Transaksi dan pembayaran dilakukan di lokasi titik temu yang disepakati.
+              </p>
+            </div>
+
+            <!-- Catatan untuk Penjual -->
+            <div class="min-w-0 space-y-1.5 pt-2">
+              <label class="text-xs font-bold text-slate-700 flex items-center justify-between">
+                <span>Catatan untuk Penjual</span>
+                <span class="text-[11px] text-slate-400 font-normal">(opsional)</span>
+              </label>
+              <Textarea
+                v-model="buyerNotes"
+                placeholder="Contoh: Tolong packing bubble wrap lebih tebal, jangan dibanting..."
+                rows="2"
+                autoResize
+                class="w-full text-xs! rounded-lg! border-slate-200!"
+              />
             </div>
           </div>
 
@@ -476,15 +564,16 @@ onMounted(() => {
 
               <div class="space-y-1.5">
                 <label class="text-[11px] text-slate-500 block">Pilih Metode Pembayaran</label>
-                <Select v-model="selectedPaymentMethod" :options="paymentOptions" optionLabel="label" optionValue="value"
-                  class="w-full min-w-0! text-xs! bg-white! rounded-lg!" />
+                <Select v-model="selectedPaymentMethod" :options="paymentOptions" optionLabel="label"
+                  optionValue="value" class="w-full min-w-0! text-xs! bg-white! rounded-lg!" />
               </div>
 
               <p v-if="selectedPaymentMethod === 'transfer'" class="text-[11px] text-slate-600 leading-relaxed">
                 Silakan transfer sesuai dengan total tagihan ke rekening berikut:
               </p>
 
-              <div v-if="selectedPaymentMethod === 'transfer'" class="bg-white rounded p-3 border border-blue-100 flex items-center justify-between">
+              <div v-if="selectedPaymentMethod === 'transfer'"
+                class="bg-white rounded p-3 border border-blue-100 flex items-center justify-between">
                 <div>
                   <span class="text-[10px] text-slate-400 uppercase font-semibold block">{{ paymentInfo.bankName
                   }}</span>
@@ -502,62 +591,65 @@ onMounted(() => {
                 Pesanan akan diproses dengan pembayaran COD saat barang diterima.
               </p>
 
-              <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileSelect" />
+              <input v-if="selectedPaymentMethod === 'transfer'" ref="fileInput" type="file" accept="image/*"
+                class="hidden" @change="handleFileSelect" />
 
               <!-- Simulasi Upload Area -->
-              <div v-if="!previewImage && !isUploading" @click="triggerFileInput" @dragover.prevent
-                @drop.prevent="handleDrop"
-                class="border-2 border-dashed border-blue-200 hover:border-blue-500 rounded p-5 bg-white flex flex-col items-center justify-center cursor-pointer transition-colors group">
-                <div
-                  class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                  <i class="pi pi-cloud-upload text-lg"></i>
-                </div>
-                <p class="text-xs font-semibold text-slate-700">Unggah Bukti Transfer</p>
-                <p class="text-[10px] text-slate-400 mt-1">Klik atau seret gambar ke sini (.PNG, .JPG)</p>
-              </div>
-
-              <div v-else-if="isUploading" class="border border-blue-100 rounded p-4 bg-white space-y-2">
-                <div class="flex items-center justify-between text-xs text-slate-600 font-medium">
-                  <span class="flex items-center gap-2">
-                    <i class="pi pi-spin pi-spinner text-blue-600"></i>
-                    Mengunggah gambar...
-                  </span>
-                  <span>{{ uploadProgress }}%</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                  <div class="bg-blue-600 h-1.5 transition-all duration-200" :style="{ width: uploadProgress + '%' }">
-                  </div>
-                </div>
-              </div>
-
-              <div v-else-if="isSuccess && previewImage" class="space-y-2">
-                <div class="relative border border-slate-200 rounded overflow-hidden bg-white group">
-                  <img :src="previewImage" alt="Bukti Transfer" class="w-full h-36 object-cover" />
+              <template v-if="selectedPaymentMethod === 'transfer'">
+                <div v-if="!previewImage && !isUploading" @click="triggerFileInput" @dragover.prevent
+                  @drop.prevent="handleDrop"
+                  class="border-2 border-dashed border-blue-200 hover:border-blue-500 rounded p-5 bg-white flex flex-col items-center justify-center cursor-pointer transition-colors group">
                   <div
-                    class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button @click="triggerFileInput"
-                      class="bg-white text-slate-800 text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-slate-100">
-                      Ganti
-                    </button>
-                    <button @click="removeImage"
-                      class="bg-rose-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-rose-700">
-                      Hapus
-                    </button>
+                    class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <i class="pi pi-cloud-upload text-lg"></i>
+                  </div>
+                  <p class="text-xs font-semibold text-slate-700">Unggah Bukti Transfer</p>
+                  <p class="text-[10px] text-slate-400 mt-1">Klik atau seret gambar ke sini (.PNG, .JPG)</p>
+                </div>
+
+                <div v-else-if="isUploading" class="border border-blue-100 rounded p-4 bg-white space-y-2">
+                  <div class="flex items-center justify-between text-xs text-slate-600 font-medium">
+                    <span class="flex items-center gap-2">
+                      <i class="pi pi-spin pi-spinner text-blue-600"></i>
+                      Mengunggah gambar...
+                    </span>
+                    <span>{{ uploadProgress }}%</span>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-blue-600 h-1.5 transition-all duration-200" :style="{ width: uploadProgress + '%' }">
+                    </div>
                   </div>
                 </div>
 
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
-                    <i class="pi pi-check-circle text-xs"></i>
-                    <span>Berhasil diunggah</span>
+                <div v-else-if="isSuccessUpload && previewImage" class="space-y-2">
+                  <div class="relative border border-slate-200 rounded overflow-hidden bg-white group">
+                    <img :src="previewImage" alt="Bukti Transfer" class="w-full h-36 object-cover" />
+                    <div
+                      class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button @click="triggerFileInput"
+                        class="bg-white text-slate-800 text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-slate-100">
+                        Ganti
+                      </button>
+                      <button @click="removeImage"
+                        class="bg-rose-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-rose-700">
+                        Hapus
+                      </button>
+                    </div>
                   </div>
-                  <button @click="removeImage" class="text-[11px] text-rose-500 hover:underline">Hapus</button>
-                </div>
-              </div>
 
-              <p class="text-[10px] text-slate-400 italic">
-                *Pesanan akan diproses setelah bukti transfer dikonfirmasi oleh admin.
-              </p>
+                  <!-- <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+                      <i class="pi pi-check-circle text-xs"></i>
+                      <span>Berhasil diunggah</span>
+                    </div>
+                    <button @click="removeImage" class="text-[11px] text-rose-500 hover:underline">Hapus</button>
+                  </div> -->
+                </div>
+
+                <p class="text-[10px] text-slate-400 italic">
+                  *Pesanan akan diproses setelah bukti transfer dikonfirmasi oleh admin.
+                </p>
+              </template>
             </div>
           </div>
 
@@ -572,19 +664,12 @@ onMounted(() => {
               </div>
               <div class="flex items-center justify-between text-slate-600">
                 <span>Total Ongkos Kirim</span>
-                <span class="font-medium text-slate-800">{{ formatCurrency(totalShippingCost) }}</span>
-              </div>
-              <div class="flex items-center justify-between text-slate-600">
-                <span>Biaya Layanan</span>
-                <span class="font-medium text-slate-800">{{ formatCurrency(serviceFee) }}</span>
+                <span class="font-medium text-slate-800">{{ selectedPaymentMethod === 'cod' ? 'Gratis' :
+                  formatCurrency(totalShippingCost) }}</span>
               </div>
               <div class="flex items-center justify-between text-slate-600">
                 <span>Metode Pembayaran</span>
                 <span class="font-medium text-slate-800">{{ paymentMethodLabel }}</span>
-              </div>
-              <div class="flex items-center justify-between text-slate-600">
-                <span>Biaya Layanan</span>
-                <span class="font-medium text-slate-800">{{ formatCurrency(serviceFee) }}</span>
               </div>
             </div>
 
@@ -593,8 +678,9 @@ onMounted(() => {
               <span class="text-lg font-bold text-blue-600">{{ formatCurrency(grandTotal) }}</span>
             </div>
 
-            <Button label="Buat Pesanan" :disabled="!isSuccess || isSubmittingOrder" :loading="isSubmittingOrder"
-              @click="handleCreateOrder"
+            <Button label="Buat Pesanan"
+              :disabled="(selectedPaymentMethod === 'transfer' && !isSuccessUpload) || isSubmittingOrder"
+              :loading="isSubmittingOrder" @click="handleCreateOrder"
               class="w-full bg-blue-600! border-blue-600! py-3! text-xs! font-bold! rounded! shadow-sm! hover:bg-blue-700! disabled:opacity-50! disabled:cursor-not-allowed!" />
           </div>
 
@@ -619,7 +705,8 @@ onMounted(() => {
             <span class="min-w-0 flex-1">
               <span class="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-800">
                 {{ address.name }}
-                <span v-if="address.is_default" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Utama</span>
+                <span v-if="address.is_default"
+                  class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Utama</span>
               </span>
               <span class="mt-1 block text-xs text-slate-500">{{ address.phone }}</span>
               <span class="mt-1 block break-words text-xs leading-5 text-slate-600">{{ address.address }}</span>
@@ -632,14 +719,15 @@ onMounted(() => {
         </div>
         <div class="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
           <Button label="Tutup" severity="secondary" outlined @click="isAddressModalOpen = false" />
-          <Button v-if="selectedAddress" label="Edit alamat terpilih" icon="pi pi-pencil" outlined @click="openEditAddress" />
+          <Button v-if="selectedAddress" label="Edit alamat terpilih" icon="pi pi-pencil" outlined
+            @click="openEditAddress" />
           <Button label="Tambah alamat baru" icon="pi pi-plus" @click="openAddAddress" />
         </div>
       </div>
     </Dialog>
 
-    <CODAddressModal v-model:visible="showEditModal" :mode="addressModalMode" :codLocation="addressModalMode === 'edit' ? selectedAddress : null"
-      @saved="loadLocations" />
+    <CODAddressModal v-model:visible="showEditModal" :mode="addressModalMode"
+      :codLocation="addressModalMode === 'edit' ? selectedAddress : null" @saved="loadLocations" />
     <!-- POPUP MODAL SUKSES PESANAN (MOCKUP GAMBAR) -->
     <Dialog v-model:visible="isSuccessModalOpen" modal :closable="false" :style="{ width: '90%', maxWidth: '480px' }"
       class="rounded-3xl! overflow-hidden">

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
-import type { LoginRequest, RegisterRequest, User } from '../types';
+import type { LoginRequest, RegisterRequest, UpdateProfileRequest, User } from '../types';
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
@@ -79,7 +79,9 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null;
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    await router.push('/login');
+    localStorage.removeItem('checkoutItems');
+    sessionStorage.clear();
+    window.location.href = '/login';
   }
 
   async function fetchUser() {
@@ -102,6 +104,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function updateProfile(data: UpdateProfileRequest) {
+    const response = await authService.updateProfile(data);
+
+    if (response.success && response.data) {
+      user.value = response.data as User;
+    }
+
+    return response;
+  }
+
   return {
     user,
     token,
@@ -110,6 +122,7 @@ export const useAuthStore = defineStore('auth', () => {
     isEmailVerified,
     login,
     register,
+    updateProfile,
     verifyEmail,
     resendCode,
     logout,

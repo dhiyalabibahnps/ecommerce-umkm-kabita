@@ -31,7 +31,7 @@ class PaymentTest extends TestCase
 
     $this->order = Order::factory()->create([
       'buyer_id' => $this->buyer->id,
-      'status' => OrderStatus::PENDING,
+      'status' => OrderStatus::AWAITING_VERIFICATION,
     ]);
 
     $this->payment = Payment::factory()->create([
@@ -149,7 +149,8 @@ class PaymentTest extends TestCase
     $codOrder = Order::factory()->create([
       'buyer_id' => $this->buyer->id,
       'payment_method' => 'cod',
-      'status' => OrderStatus::PENDING,
+      'shipping_method' => 'cod',
+      'status' => OrderStatus::AWAITING_VERIFICATION,
     ]);
 
     $codPayment = Payment::factory()->create([
@@ -161,7 +162,7 @@ class PaymentTest extends TestCase
       ->post("/api/v1/orders/{$codOrder->id}/cod-confirm");
 
     $response->assertStatus(200)
-      ->assertJsonPath('data.status', 'processing');
+      ->assertJsonPath('data.status', 'cod_meeting');
 
     $this->assertDatabaseHas('payments', [
       'id' => $codPayment->id,

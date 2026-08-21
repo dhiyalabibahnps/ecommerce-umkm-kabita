@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('total_amount', 12, 2);
             $table->enum('shipping_method', ['cod', 'kurir'])->default('kurir');
             $table->enum('payment_method', ['transfer', 'cod'])->default('transfer');
-            $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled'])->default('pending');
+            $table->string('status')->default('pending');
             $table->text('shipping_address');
             $table->string('tracking_number')->nullable();
             $table->text('notes')->nullable();

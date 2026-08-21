@@ -2,10 +2,11 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
+import { useAuthStore } from '@/stores/auth'
+import Avatar from 'primevue/avatar'
 import ProfileAccount from './ProfileAccount.vue'
 import ProfileAddress from './ProfileAddress.vue'
 import ProfileOrders from './ProfileOrders.vue'
-import { useAuthStore } from '@/stores/auth'
 
 const props = withDefaults(
   defineProps<{
@@ -44,15 +45,20 @@ const activeComponent = computed(() => {
 
 <template>
   <div class="min-h-screen bg-slate-50 py-6 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
 
       <!-- Sidebar Navigasi (Kiri) -->
       <aside class="lg:col-span-3">
         <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
           <!-- Profile Badge Ringkas -->
           <div class="flex items-center gap-3 pb-5 mb-4 border-b border-slate-100">
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700">
-              {{ (authStore.user?.name || 'User').slice(0, 2).toUpperCase() }}
+            <div v-if="authStore.user && authStore.user.photo">
+              <img :src="authStore.user?.photo" alt="Profile"
+                class="flex w-12 h-12 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-700 object-cover border border-slate-100 shadow-sm" />
+            </div>
+            <div v-else>
+              <Avatar icon="pi pi-user" size="normal" style="background-color: #dee9fc; color: #1a2551"
+                shape="circle" />
             </div>
             <div>
               <h2 class="font-bold text-slate-800 text-sm">{{ authStore.user?.name || 'Akun Saya' }}</h2>
@@ -74,7 +80,8 @@ const activeComponent = computed(() => {
               <span>{{ menu.label }}</span>
             </router-link>
           </nav>
-          <Button label="Keluar" icon="pi pi-sign-out" severity="secondary" text class="mt-4 w-full justify-start! rounded-xl!" @click="authStore.logout" />
+          <Button label="Keluar" icon="pi pi-sign-out" severity="secondary" text
+            class="mt-4 w-full justify-start! rounded-xl!" @click="authStore.logout" />
         </div>
       </aside>
 

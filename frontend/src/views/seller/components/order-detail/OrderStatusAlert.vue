@@ -10,29 +10,42 @@ const props = defineProps<{
 
 const alertConfig = computed(() => {
   switch (props.status) {
-    case 'pending':
+    case 'awaiting_verification':
       return {
         bg: 'bg-amber-50 border-amber-200 text-amber-800',
         icon: 'pi pi-clock text-amber-600',
-        title: 'Menunggu Pembayaran / Verifikasi',
-        desc: 'Batas waktu 24 jam. Pesanan akan otomatis dibatalkan jika pembeli tidak melakukan pembayaran.'
+        title: 'Pembayaran Sedang Diverifikasi',
+        desc: 'Bukti transfer sedang dicek. Pesanan akan lanjut ke proses setelah verifikasi.'
       };
     case 'processing':
       return {
         bg: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-        icon: 'pi pi-box text-emerald-600',
-        title: 'Pesanan Sedang Dikemas',
-        desc: 'Barang sedang dipacking oleh seller. Segera konfirmasi pengiriman setelah paket diserahkan ke kurir.'
+        icon: 'pi pi-check-circle text-emerald-600',
+        title: 'Dikonfirmasi',
+        desc: 'Pesanan sudah dikonfirmasi dan siap dikemas.'
+      };
+    case 'packed':
+      return {
+        bg: 'bg-indigo-50 border-indigo-200 text-indigo-800',
+        icon: 'pi pi-box text-indigo-600',
+        title: 'Dikemas',
+        desc: 'Barang sedang dipacking oleh seller.'
       };
     case 'shipped':
       return {
         bg: 'bg-blue-50 border-blue-200 text-blue-800',
         icon: 'pi pi-truck text-blue-600',
-        title: props.shippingMethod === 'cod' ? 'Sedang Dikirim (COD / Ketemuan)' : 'Sedang Dikirim',
+        title: props.shippingMethod === 'cod' ? 'Sedang Dikirim (COD / Ketemuan)' : 'Dikirim',
         desc: props.shippingMethod === 'cod' ? 'Pesanan sedang dalam perjalanan menuju titik temu.' : 'Paket dalam perjalanan menuju alamat pembeli.'
       };
+    case 'cod_meeting':
+      return {
+        bg: 'bg-orange-50 border-orange-200 text-orange-800',
+        icon: 'pi pi-map-marker text-orange-600',
+        title: 'Ketemuan',
+        desc: 'Pesanan sudah sampai di lokasi ketemuan. Selesaikan pesanan setelah buyer menerima barang.'
+      };
     case 'completed':
-    case 'delivered':
       return {
         bg: 'bg-emerald-50 border-emerald-200 text-emerald-800',
         icon: 'pi pi-check-circle text-emerald-600',

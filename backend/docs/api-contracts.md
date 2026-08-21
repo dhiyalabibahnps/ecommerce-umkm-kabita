@@ -20,6 +20,7 @@
 | POST | `/auth/resend-code` | no | Resend verification code |
 | POST | `/auth/logout` | yes | Logout |
 | GET | `/auth/me` | yes | Current user |
+| PUT | `/auth/me/profile` | yes | Update buyer profile |
 
 ### POST /auth/login
 **Request body**
@@ -70,6 +71,18 @@
 ### GET /auth/me
 **Responses**
 - `200`: `{ success: true, data: UserResource }`
+
+### PUT /auth/me/profile
+**Request body** (`multipart/form-data`)
+- `name`: string, required
+- `phone`: string, required
+- `address`: string, optional
+- `email`: string, required, email
+- `photo`: file, optional, image, max 2MB
+
+**Responses**
+- `200`: `{ success: true, message: "Profil berhasil diperbarui.", data: UserResource }`
+- `422`: `{ success: false, message: "Validasi gagal.", errors: {} }`
 
 ---
 
@@ -460,6 +473,7 @@
 | GET | `/locations` | yes, buyer | List shipping locations |
 | POST | `/locations` | yes, buyer | Save shipping location |
 | PUT | `/locations/{location}` | yes, buyer | Update shipping location |
+| PATCH | `/locations/{location}/default` | yes, buyer | Set default shipping location |
 | DELETE | `/locations/{location}` | yes, buyer | Delete shipping location |
 
 ### GET /locations
@@ -487,6 +501,11 @@
 
 **Responses**
 - `200`: `{ success: true, message: "Lokasi pengiriman berhasil diperbarui.", data: LocationResource }`
+- `403`: `{ success: false, message: "Akses ditolak." }`
+
+### PATCH /locations/{location}/default
+**Responses**
+- `200`: `{ success: true, message: "Lokasi pengiriman default berhasil diperbarui.", data: LocationResource }`
 - `403`: `{ success: false, message: "Akses ditolak." }`
 
 ### DELETE /locations/{location}

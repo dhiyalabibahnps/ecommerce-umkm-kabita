@@ -5,6 +5,7 @@ import type {
   LoginRequest,
   MessageResponse,
   RegisterRequest,
+  UpdateProfileRequest,
   User,
   VerifyEmailRequest
 } from '../types';
@@ -38,6 +39,13 @@ export const authService = {
 
   async getCurrentUser(): Promise<ApiResponse<User>> {
     const response = await apiClient.get('/me');
+    return response.data;
+  },
+
+  async updateProfile(data: UpdateProfileRequest): Promise<ApiResponse<User>> {
+    const response = await apiClient.put('/me/profile', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
 };

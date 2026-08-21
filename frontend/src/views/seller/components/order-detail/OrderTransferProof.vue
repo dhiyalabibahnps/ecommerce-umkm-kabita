@@ -4,7 +4,7 @@ import Dialog from 'primevue/dialog';
 import { ref } from 'vue';
 
 defineProps<{
-  proofImage: string | null;
+  proofImage: string | undefined;
 }>();
 
 const visible = ref(false);

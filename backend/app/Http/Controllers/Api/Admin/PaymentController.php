@@ -11,6 +11,7 @@ use App\Http\Resources\OrderResource;
 use App\Http\Resources\PaymentResource;
 use App\Mail\PaymentRejectedMail;
 use App\Mail\PaymentVerifiedMail;
+use App\Models\Notification;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -114,20 +115,52 @@ class PaymentController extends Controller
     // Update payment status
     $payment->update(['status' => PaymentStatus::VERIFIED]);
 
-    // Update order status to processing
+    // Update order status to processing (Dikonfirmasi)
     $order = $payment->order;
     $order->update(['status' => \App\Enums\OrderStatus::PROCESSING]);
 
     // Load relationships for response
     $order->load(['items', 'shop', 'payment', 'buyer']);
 
-    // Notify seller
+    // Notify seller via mail
     $order->shop->seller->notify(new PaymentVerifiedMail(
       $order->buyer->name,
       $order->shop->seller->name,
       $order->order_number,
       number_format((float) $order->total_amount, 0, ',', '.')
     ));
+
+    // In-app notification for seller
+    if ($order->shop?->seller_id) {
+      Notification::create([
+        'user_id' => $order->shop->seller_id,
+        'type' => 'order',
+        'title' => 'Pembayaran Pesanan Terverifikasi',
+        'message' => "Pembayaran pesanan {$order->order_number} telah diverifikasi admin. Silakan proses pesanan.",
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'url' => "/seller/pesanan/{$order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
+
+    // In-app notification for buyer
+    if ($order->buyer_id) {
+      Notification::create([
+        'user_id' => $order->buyer_id,
+        'type' => 'order',
+        'title' => 'Pembayaran Disetujui',
+        'message' => "Pembayaran pesanan {$order->order_number} telah disetujui. Penjual akan segera memproses pesanan Anda.",
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'url' => "/order-detail?id={$order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
 
     return response()->json([
       'success' => true,
@@ -160,12 +193,29 @@ class PaymentController extends Controller
     // Load relationships for response
     $payment->load(['order.buyer', 'order.shop']);
 
-    // Notify buyer
+    // Notify buyer via mail
     $payment->order->buyer->notify(new PaymentRejectedMail(
       $payment->order->buyer->name,
       $payment->order->order_number,
       $request->input('rejection_reason', '')
     ));
+
+    // In-app notification for buyer
+    if ($payment->order->buyer_id) {
+      Notification::create([
+        'user_id' => $payment->order->buyer_id,
+        'type' => 'order',
+        'title' => 'Pembayaran Ditolak',
+        'message' => "Pembayaran pesanan {$payment->order->order_number} ditolak: " . $request->input('rejection_reason'),
+        'data' => [
+          'order_id' => $payment->order->id,
+          'order_number' => $payment->order->order_number,
+          'rejection_reason' => $request->input('rejection_reason'),
+          'url' => "/order-detail?id={$payment->order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
 
     return response()->json([
       'success' => true,

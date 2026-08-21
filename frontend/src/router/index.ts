@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/stores/auth.ts';
+import { useAuthStore } from '@/stores/auth';
 import type { RouteRecordRaw } from 'vue-router';
 import { createRouter, createWebHistory } from 'vue-router';
 
@@ -56,6 +56,12 @@ const routes: RouteRecordRaw[] = [
     name: 'category',
     component: () => import('../views/CategoryView.vue'),
     meta: { guest: true, title: 'Kategori - Kabita' }
+  },
+  {
+    path: '/toko/:slug',
+    name: 'shop-detail',
+    component: () => import('../views/ShopDetailView.vue'),
+    meta: { guest: true, title: 'Toko - Kabita' }
   },
   {
     path: '/profile/:slug?',

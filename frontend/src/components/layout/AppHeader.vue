@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
+import NotificationBell from '@/components/layout/NotificationBell.vue'
 import Button from 'primevue/button'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -17,11 +18,15 @@ const isLoggedIn = computed(() => !!authStore.user)
 const cartItemCount = computed(() => cartStore.totalItems)
 
 onMounted(() => {
-  if (authStore.user) void cartStore.loadCart()
+  if (authStore.user) {
+    void cartStore.loadCart()
+  }
 })
 
 watch(() => authStore.user?.id, (userId) => {
-  if (userId) void cartStore.loadCart()
+  if (userId) {
+    void cartStore.loadCart()
+  }
 })
 
 watch(isMobileSearchOpen, (open) => {
@@ -65,14 +70,14 @@ async function handleLogout() {
 
 <template>
   <header class="bg-[#faf8ff] shadow-sm sticky top-0 z-50">
-    <div class="container max-w-7xl mx-auto px-4 py-4">
+    <div class="container max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 py-4">
       <!-- Desktop header -->
       <div class="hidden lg:flex items-center justify-between gap-4">
         <div class="flex items-center gap-8">
           <router-link to="/" class="text-xl font-bold text-primary">Kabita</router-link>
           <nav class="flex items-center gap-6 text-sm font-medium text-slate-700">
             <router-link to="/" class="no-underline hover:text-slate-900">Beranda</router-link>
-            <router-link to="/produk" class="no-underline hover:text-slate-900">Kategori</router-link>
+            <router-link to="/produk" class="no-underline hover:text-slate-900">Produk</router-link>
             <router-link to="/tentang-kami" class="no-underline hover:text-slate-900">Tentang Kami</router-link>
             <router-link to="/bantuan" class="no-underline hover:text-slate-900">Bantuan</router-link>
           </nav>
@@ -87,15 +92,15 @@ async function handleLogout() {
               class="w-full border-0 bg-transparent pl-10 pr-4 text-sm text-slate-700 outline-none ring-0 shadow-none placeholder:text-slate-400 focus:border-0 focus:outline-none focus:ring-0" />
           </div> -->
           <div class="relative">
-            <Button icon="pi pi-shopping-cart" label="Keranjang" text aria-label="Buka keranjang belanja"
-              class="px-2! sm:px-3!" @click="router.push('/cart')" />
+            <Button icon="pi pi-shopping-cart" text aria-label="Buka keranjang belanja" class="px-2! sm:px-3!"
+              @click="router.push('/cart')" />
             <span v-if="cartItemCount"
               class="absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-semibold text-white">
               {{ cartItemCount }}
             </span>
           </div>
-          <Button icon="pi pi-bell" text aria-label="Notifikasi" />
           <template v-if="isLoggedIn">
+            <NotificationBell role="buyer" />
             <Button label="Profil" icon="pi pi-user" text @click="router.push('/profile/account')" />
             <Button label="Keluar" icon="pi pi-sign-out" text severity="secondary" @click="handleLogout" />
           </template>
@@ -125,8 +130,8 @@ async function handleLogout() {
               {{ cartItemCount }}
             </span>
           </div>
-          <Button icon="pi pi-bell" text aria-label="Notifikasi" class="shrink-0 !p-2" />
           <template v-if="isLoggedIn">
+            <NotificationBell role="buyer" />
             <Button icon="pi pi-user" text aria-label="Profil" class="shrink-0 !p-2"
               @click="router.push('/profile/account')" />
             <Button icon="pi pi-sign-out" text severity="secondary" aria-label="Keluar" class="shrink-0 !p-2"
@@ -163,11 +168,11 @@ async function handleLogout() {
     <!-- Mobile nav menu (dropdown) -->
     <Transition name="slide">
       <nav v-if="isMenuOpen" class="lg:hidden border-t border-slate-100 bg-[#faf8ff]">
-        <div class="container max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
+        <div class="container max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
           <router-link to="/" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
             @click="closeMenu">Beranda</router-link>
           <router-link to="/produk" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
-            @click="closeMenu">Kategori & Produk</router-link>
+            @click="closeMenu">Produk</router-link>
           <router-link to="/tentang-kami" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
             @click="closeMenu">Tentang Kami</router-link>
           <router-link to="/bantuan" class="rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"

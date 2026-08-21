@@ -38,6 +38,7 @@ class User extends Authenticatable
         'role',      // Tambahan: admin, seller, buyer
         'phone',     // Tambahan: nomor WhatsApp
         'address',   // Tambahan: alamat user
+        'photo',     // Tambahan: foto profil
         'status',    // Tambahan: active, inactive, suspended
         'proof_image',
         'verified_by',
@@ -121,5 +122,13 @@ class User extends Authenticatable
     public function codLocations(): HasMany
     {
         return $this->hasMany(CodLocation::class);
+    }
+
+    /**
+     * Get the notifications for the user.
+     */
+    public function userNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
     }
 }

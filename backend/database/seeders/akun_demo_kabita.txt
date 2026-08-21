@@ -1,0 +1,52 @@
+Akun Demo Kabita E-Commerce
+Password semua akun: password
+
+1. Admin Kabita
+   Email: admin@kabita.test
+   Role: admin
+   HP: 081234500001
+
+2. Siti Aminah
+   Email: siti@umkm.test
+   Role: seller
+   HP: 081234500002
+
+3. Budi Santoso
+   Email: budi@umkm.test
+   Role: seller
+   HP: 081234500003
+
+4. Rina Wati
+   Email: rina@umkm.test
+   Role: seller
+   HP: 081234500004
+
+5. Andi Wijaya
+   Email: andi@buyer.test
+   Role: buyer
+   HP: 081234500005
+
+6. Dewi Lestari
+   Email: dewi@buyer.test
+   Role: buyer
+   HP: 081234500006
+
+7. Fajar Nugroho
+   Email: fajar@buyer.test
+   Role: buyer
+   HP: 081234500007
+
+8. Maya Putri
+   Email: maya@buyer.test
+   Role: buyer
+   HP: 081234500008
+
+9. Rahmat Hidayat
+   Email: rahmat@buyer.test
+   Role: buyer
+   HP: 081234500009
+
+10. Lina Marlina
+    Email: lina@buyer.test
+    Role: buyer
+    HP: 081234500010

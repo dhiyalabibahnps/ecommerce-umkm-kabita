@@ -22,14 +22,37 @@ const getStatusSeverity = (status?: string) => {
     case 'delivered':
       return 'success'
     case 'processing':
+    case 'packed':
     case 'shipped':
       return 'info'
-    case 'pending':
+    case 'awaiting_verification':
       return 'warn'
     case 'cancelled':
       return 'danger'
     default:
       return 'secondary'
+  }
+}
+
+const getStatusLabel = (status?: string) => {
+  switch (status) {
+    case 'awaiting_verification':
+      return 'MENUNGGU VERIFIKASI'
+    case 'processing':
+      return 'DIPROSES'
+    case 'packed':
+      return 'DIKEMAS'
+    case 'shipped':
+      return 'DIKIRIM'
+    case 'cod_meeting':
+      return 'KETEMUAN'
+    case 'completed':
+    case 'delivered':
+      return 'SELESAI'
+    case 'cancelled':
+      return 'DIBATALKAN'
+    default:
+      return status ? status.replace(/_/g, ' ').toUpperCase() : 'MENUNGGU VERIFIKASI'
   }
 }
 
@@ -103,7 +126,7 @@ const getPaymentBadge = (method?: string) => {
             </td>
 
             <td class="py-3.5 px-4">
-              <Tag :value="order.status ? order.status.toUpperCase() : 'PENDING'"
+              <Tag :value="getStatusLabel(order.status)"
                 :severity="getStatusSeverity(order.status)" class="text-![10px] px-2!.5 py-0!.5" />
             </td>
 

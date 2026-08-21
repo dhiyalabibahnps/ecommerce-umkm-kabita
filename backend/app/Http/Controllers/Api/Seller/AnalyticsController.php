@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Seller;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
@@ -47,7 +48,7 @@ class AnalyticsController extends Controller
       ->whereBetween('created_at', [$monthStart, $monthEnd])
       ->sum('total_amount');
     $pendingOrders   = Order::where('shop_id', $shopId)
-      ->where('status', 'pending')
+      ->where('status', OrderStatus::AWAITING_VERIFICATION)
       ->count();
 
     return response()->json([
