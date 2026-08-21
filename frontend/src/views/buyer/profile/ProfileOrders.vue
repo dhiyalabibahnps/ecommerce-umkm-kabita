@@ -6,6 +6,7 @@ import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
 
 import OrderStatusBadge from '@/components/ui/OrderStatusBadge.vue'
+import { formatCourierDisplay } from '@/constants/courier'
 import { getApiErrorMessage } from '@/services/apiError'
 import { buyerOrderService } from '@/services/buyerOrderService'
 import { useChatStore } from '@/stores/chat'
@@ -213,7 +214,7 @@ onMounted(loadOrders)
           <div class="flex items-center gap-2">
             <i class="pi pi-truck text-slate-500 text-xs"></i>
             <span class="text-slate-600 font-medium">
-              {{ order.shipping_method === 'cod' ? 'COD (Ketemuan Langsung)' : (order.courier || 'Kurir Ekspedisi') }}
+              {{ order.shipping_method === 'cod' ? 'COD (Ketemuan Langsung)' : formatCourierDisplay(order.courier) }}
             </span>
             <span v-if="order.tracking_number" class="font-mono text-[11px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60">
               Resi: {{ order.tracking_number }}

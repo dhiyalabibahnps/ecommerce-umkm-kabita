@@ -96,6 +96,63 @@ export function getCourierMaster(code: string): CourierMaster | undefined {
 }
 
 export function formatCourierDisplay(courierString?: string | null): string {
-  if (!courierString) return 'Kurir Ekspedisi';
-  return courierString;
+  if (!courierString) return 'Kurir Reguler';
+  return courierString
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
+export function resolveCourierOptionValue(rawCourier?: string | null): string {
+  if (!rawCourier) return FLAT_SHIPPING_OPTIONS[0]?.fullCourierLabel || 'JNE REG';
+  const cleaned = formatCourierDisplay(rawCourier).trim();
+  if (!cleaned) return FLAT_SHIPPING_OPTIONS[0]?.fullCourierLabel || 'JNE REG';
+
+  // 1. Exact match with fullCourierLabel (case-insensitive)
+  const exact = FLAT_SHIPPING_OPTIONS.find(
+    (opt) => opt.fullCourierLabel.toLowerCase() === cleaned.toLowerCase()
+  );
+  if (exact) return exact.fullCourierLabel;
+
+  // 2. Exact match with courier code + service code or key
+  const codeMatch = FLAT_SHIPPING_OPTIONS.find(
+    (opt) =>
+      `${opt.courierCode} ${opt.serviceCode}`.toLowerCase() === cleaned.toLowerCase() ||
+      opt.key === cleaned.toLowerCase()
+  );
+  if (codeMatch) return codeMatch.fullCourierLabel;
+
+  // 3. Partial match (e.g. contains courier name/code and serviceCode)
+  const partialMatch = FLAT_SHIPPING_OPTIONS.find((opt) => {
+    const courierKeywords = [opt.courierName.toLowerCase(), opt.courierCode.toLowerCase()];
+    const hasCourier = courierKeywords.some((k) => cleaned.toLowerCase().includes(k));
+    const hasService = cleaned.toLowerCase().includes(opt.serviceCode.toLowerCase());
+    return hasCourier && hasService;
+  });
+  if (partialMatch) return partialMatch.fullCourierLabel;
+
+  // 4. Fallback to cleaned value (so custom/legacy strings are preserved)
+  return cleaned;
+}
+
+export function getCourierSelectOptions(selectedCourier?: string | null): Array<{ label: string; value: string }> {
+  const baseOptions = FLAT_SHIPPING_OPTIONS.map((opt) => ({
+    label: `${opt.courierName} - ${opt.serviceCode} (${opt.serviceName})`,
+    value: opt.fullCourierLabel,
+  }));
+
+  if (selectedCourier) {
+    const resolved = resolveCourierOptionValue(selectedCourier);
+    const exists = baseOptions.some((item) => item.value.toLowerCase() === resolved.toLowerCase());
+    if (!exists && resolved) {
+      baseOptions.unshift({
+        label: `${resolved} (Pilihan Pembeli)`,
+        value: resolved,
+      });
+    }
+  }
+
+  return baseOptions;
 }

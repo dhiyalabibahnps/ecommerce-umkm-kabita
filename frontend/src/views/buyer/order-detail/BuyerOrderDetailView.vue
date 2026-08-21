@@ -10,6 +10,7 @@ import OrderStatusBadge from '@/components/ui/OrderStatusBadge.vue'
 import OrderStepper from '@/views/seller/components/order-detail/OrderStepper.vue'
 import OrderTimeline from '@/views/seller/components/order-detail/OrderTimeline.vue'
 import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal.vue'
+import { formatCourierDisplay } from '@/constants/courier'
 import { getApiErrorMessage } from '@/services/apiError'
 import { buyerOrderService } from '@/services/buyerOrderService'
 import { buyerPaymentService } from '@/services/buyerPaymentService'
@@ -297,7 +298,7 @@ onMounted(loadOrder)
               <div class="space-y-1">
                 <span class="text-[10px] font-semibold text-slate-400 block uppercase tracking-wider">Kurir & Layanan</span>
                 <p class="font-bold text-slate-800">
-                  {{ isCod ? 'COD (Ketemuan Langsung)' : (order.courier || 'Kurir Reguler') }}
+                  {{ isCod ? 'COD (Ketemuan Langsung)' : formatCourierDisplay(order.courier) }}
                 </p>
               </div>
 

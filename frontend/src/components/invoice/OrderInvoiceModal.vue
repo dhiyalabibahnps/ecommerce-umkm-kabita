@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
+import { formatCourierDisplay } from '@/constants/courier';
 import type { Order } from '@/types';
 
 const props = defineProps<{
@@ -162,7 +163,7 @@ const handlePrint = () => {
         </div>
         <div>
           <span class="text-[10px] text-slate-400 block font-semibold uppercase">Kurir & Layanan</span>
-          <span class="font-bold text-slate-800">{{ isCod ? 'COD (Ketemuan Langsung)' : (order.courier || 'Kurir Reguler') }}</span>
+          <span class="font-bold text-slate-800">{{ isCod ? 'COD (Ketemuan Langsung)' : formatCourierDisplay(order.courier) }}</span>
         </div>
         <div>
           <span class="text-[10px] text-slate-400 block font-semibold uppercase">Nomor Resi</span>

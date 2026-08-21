@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { useToast } from 'primevue/usetoast';
+import { formatCourierDisplay } from '@/constants/courier';
 import type { OrderStatus } from '@/types/enums';
 
 const props = defineProps<{
@@ -47,7 +48,7 @@ const copyTrackingNumber = () => {
       <div>
         <span class="text-[10px] font-semibold text-slate-400 block uppercase tracking-wider">Layanan Kurir</span>
         <p class="mt-0.5 font-bold text-slate-800">
-          {{ shippingMethod === 'cod' ? 'Cash On Delivery (Ketemuan)' : (courier || 'Kurir Reguler') }}
+          {{ shippingMethod === 'cod' ? 'Cash On Delivery (Ketemuan)' : formatCourierDisplay(courier) }}
         </p>
       </div>
 

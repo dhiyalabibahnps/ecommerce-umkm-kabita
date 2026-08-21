@@ -93,8 +93,12 @@ class AnalyticsController extends Controller
 
     $shopId      = $shop->id;
     $period      = $request->input('period', 'daily');
-    $startDate   = $request->input('start_date', now()->startOfMonth());
-    $endDate     = $request->input('end_date', now()->endOfMonth());
+    $startDate   = $request->filled('start_date')
+      ? \Carbon\Carbon::parse((string) $request->input('start_date'))->startOfDay()
+      : now()->startOfMonth()->startOfDay();
+    $endDate     = $request->filled('end_date')
+      ? \Carbon\Carbon::parse((string) $request->input('end_date'))->endOfDay()
+      : now()->endOfMonth()->endOfDay();
 
     $isSqlite = DB::connection()->getDriverName() === 'sqlite';
     $groupBy = match ($period) {
