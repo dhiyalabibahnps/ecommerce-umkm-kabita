@@ -7,7 +7,7 @@ MariaDB/MySQL.
 
 ## Menjalankan backend dan frontend
 
-Prasyarat: PHP 8.2+, Composer, Node.js 22+, dan ekstensi PHP `pdo_sqlite`.
+Prasyarat: PHP 8.3+, Composer, Node.js 22+, dan ekstensi PHP `pdo_sqlite`.
 
 Terminal 1 — backend:
 
@@ -65,7 +65,7 @@ cd ../frontend && npm run lint && npm run build
 
 ### Menjalankan project
 
-Prasyarat: PHP 8.2+, Composer, Node.js 22+/24, npm, MariaDB aktif pada port 3306, dan ekstensi pdo_mysql.
+Prasyarat: PHP 8.3+, Composer, Node.js 22+/24, npm, MariaDB aktif pada port 3306, dan ekstensi pdo_mysql.
 
 Buat database MariaDB:
 
