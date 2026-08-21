@@ -123,4 +123,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(CodLocation::class);
     }
+
+    /**
+     * Get the notifications for the user.
+     */
+    public function userNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
 }

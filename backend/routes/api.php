@@ -157,6 +157,23 @@ Route::prefix('v1')->group(function () {
   // cannot capture /shops/my-shop or /shops/pending.
   Route::get('/shops/{slug}', [ShopController::class, 'showPublic'])->name('shops.public');
 
+  // Chat Routes (Buyer & Seller)
+  Route::middleware(['auth:sanctum', 'throttle:api', 'sanitize'])->prefix('chat')->group(function () {
+    Route::get('/conversations/{conversation}', [\App\Http\Controllers\Api\ChatController::class, 'getConversation'])->name('chat.conversation.show');
+    Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\Api\ChatController::class, 'sendMessage'])->name('chat.conversation.messages');
+    Route::get('/orders/{order}', [\App\Http\Controllers\Api\ChatController::class, 'getOrderConversation'])->name('chat.order');
+    Route::post('/orders/{order}/messages', [\App\Http\Controllers\Api\ChatController::class, 'sendOrderMessage'])->name('chat.order.messages');
+    Route::get('/shops/{shop}', [\App\Http\Controllers\Api\ChatController::class, 'getShopConversation'])->name('chat.shop');
+    Route::post('/shops/{shop}/messages', [\App\Http\Controllers\Api\ChatController::class, 'sendShopMessage'])->name('chat.shop.messages');
+  });
+
+  // Notification Routes (Authenticated users)
+  Route::middleware(['auth:sanctum', 'throttle:api', 'sanitize'])->prefix('notifications')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index'])->name('notifications.index');
+    Route::put('/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::put('/{notification}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead'])->name('notifications.read');
+  });
+
   // Order Routes (Buyer only)
   Route::middleware(['auth:sanctum', 'buyer', 'throttle:api', 'sanitize'])->prefix('orders')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\Buyer\OrderController::class, 'index'])->name('orders.index');

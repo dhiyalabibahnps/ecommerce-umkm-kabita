@@ -58,6 +58,12 @@ const routes: RouteRecordRaw[] = [
     meta: { guest: true, title: 'Kategori - Kabita' }
   },
   {
+    path: '/toko/:slug',
+    name: 'shop-detail',
+    component: () => import('../views/ShopDetailView.vue'),
+    meta: { guest: true, title: 'Toko - Kabita' }
+  },
+  {
     path: '/profile/:slug?',
     name: 'profile',
     component: () => import('../views/buyer/profile/ProfileLayout.vue'),

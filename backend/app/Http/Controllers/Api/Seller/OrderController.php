@@ -11,6 +11,7 @@ use App\Http\Requests\Seller\PackOrderRequest;
 use App\Http\Requests\Seller\ProcessOrderRequest;
 use App\Http\Requests\Seller\ShipOrderRequest;
 use App\Http\Resources\OrderResource;
+use App\Models\Notification;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 
@@ -99,12 +100,12 @@ class OrderController extends Controller
   }
 
   /**
-   * Process order from awaiting verification to processing
+   * Process order from processing (dikonfirmasi) to packed (dikemas)
    *
    * @authenticated
    * @response 200 body="{"success":true,"data":{},"message":"Order berhasil diproses."}"
    * @response 403 body="{"success":false,"message":"Akses ditolak. Order ini bukan milik toko Anda."}"
-   * @response 422 body="{"success":false,"message":"Hanya order dengan status pembayaran sedang diverifikasi yang dapat diproses."}"
+   * @response 422 body="{"success":false,"message":"Hanya order dengan status dikonfirmasi yang dapat diproses."}"
    */
   public function process(ProcessOrderRequest $request, Order $order): JsonResponse
   {
@@ -115,19 +116,19 @@ class OrderController extends Controller
       ], 403);
     }
 
-    if ($order->status !== OrderStatus::AWAITING_VERIFICATION) {
+    if ($order->status !== OrderStatus::PROCESSING) {
       return response()->json([
         'success' => false,
-        'message' => 'Hanya order dengan status pembayaran sedang diverifikasi yang dapat diproses.',
+        'message' => 'Hanya order dengan status dikonfirmasi yang dapat diproses.',
       ], 422);
     }
 
-    $order->update(['status' => OrderStatus::PROCESSING]);
+    $order->update(['status' => OrderStatus::PACKED]);
 
     return response()->json([
       'success' => true,
       'data' => new OrderResource($order),
-      'message' => 'Order berhasil diproses.',
+      'message' => 'Order berhasil diproses ke status dikemas.',
     ]);
   }
 
@@ -156,6 +157,21 @@ class OrderController extends Controller
     }
 
     $order->update(['status' => OrderStatus::PACKED]);
+
+    if ($order->buyer_id) {
+      Notification::create([
+        'user_id' => $order->buyer_id,
+        'type' => 'order',
+        'title' => 'Pesanan Sedang Dikemas',
+        'message' => "Pesanan {$order->order_number} sedang dikemas oleh penjual dan disiapkan untuk pengiriman.",
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'url' => "/order-detail?id={$order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
 
     return response()->json([
       'success' => true,
@@ -191,17 +207,39 @@ class OrderController extends Controller
       ], 422);
     }
 
-    if (!$request->filled('tracking_number')) {
+    if ($order->shipping_method === 'kurir' && !$request->filled('tracking_number')) {
       return response()->json([
         'success' => false,
         'message' => 'Nomor resi wajib diisi sebelum mengirim.',
       ], 422);
     }
 
+    $courierName = $request->input('courier', $order->courier) ?? 'Kurir Ekspedisi';
+    $trackingNum = $request->input('tracking_number');
+
     $order->update([
       'status' => OrderStatus::SHIPPED,
-      'tracking_number' => $request->tracking_number,
+      'tracking_number' => $trackingNum,
+      'courier' => $courierName,
     ]);
+
+    if ($order->buyer_id) {
+      $resiMsg = $trackingNum ? " via {$courierName} dengan no. resi {$trackingNum}" : "";
+      Notification::create([
+        'user_id' => $order->buyer_id,
+        'type' => 'order',
+        'title' => 'Pesanan Sedang Dikirim',
+        'message' => "Pesanan {$order->order_number} telah dikirim{$resiMsg}. Lacak pengiriman Anda di halaman detail pesanan.",
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'courier' => $courierName,
+          'tracking_number' => $trackingNum,
+          'url' => "/order-detail?id={$order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
 
     return response()->json([
       'success' => true,

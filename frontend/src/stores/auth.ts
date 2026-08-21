@@ -79,7 +79,9 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null;
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    await router.push('/login');
+    localStorage.removeItem('checkoutItems');
+    sessionStorage.clear();
+    window.location.href = '/login';
   }
 
   async function fetchUser() {

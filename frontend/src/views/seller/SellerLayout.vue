@@ -5,6 +5,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import SellerNotificationBell from '@/views/seller/components/SellerNotificationBell.vue'
 
 import type { Shop } from '@/types/entities'
 import { sellerShopService } from '@/services/sellerShopService'
@@ -117,17 +118,12 @@ watch(() => route.path, () => {
           <i class="pi pi-sign-out text-lg"></i>
           <span>Keluar</span>
         </button>
-
-        <div class="pt-2">
-          <Button label="Tambah Produk Baru" icon="pi pi-plus"
-            class="w-full bg-blue-600! hover:bg-blue-700! border-none! py-3! rounded-xl! text-sm! font-semibold! shadow-sm!" />
-        </div>
       </div>
     </aside>
 
     <div class="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
 
-      <header class="flex min-h-20 items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4 shrink-0 z-10 sm:px-6 lg:px-8">
+      <header class="flex min-h-20 items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4 shrink-0 z-30 sm:px-6 lg:px-8">
         <div>
           <div class="flex items-center gap-3">
             <Button icon="pi pi-bars" text rounded aria-label="Buka menu seller"
@@ -140,10 +136,7 @@ watch(() => route.path, () => {
         </div>
 
         <div class="flex items-center gap-2 sm:gap-4">
-          <span class="relative hidden sm:inline-flex">
-            <Button icon="pi pi-bell" text rounded class="!p-2.5 !bg-slate-100 hover:!bg-slate-200 !text-slate-600" />
-            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-          </span>
+          <SellerNotificationBell />
 
           <div class="relative hidden w-72 md:block">
             <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>

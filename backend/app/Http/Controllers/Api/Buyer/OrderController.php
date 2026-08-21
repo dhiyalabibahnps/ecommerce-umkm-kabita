@@ -12,6 +12,7 @@ use App\Http\Requests\Order\ConfirmOrderRequest;
 use App\Http\Requests\Order\IndexOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\DailyProductSales;
+use App\Models\Notification;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -150,7 +151,36 @@ class OrderController extends Controller
       );
     }
 
-    $order->load(['items.product', 'shop', 'payment', 'buyer']);
+    $order->load(['items.product', 'shop.seller', 'payment', 'buyer']);
+
+    if ($order->shop?->seller_id) {
+      Notification::create([
+        'user_id' => $order->shop->seller_id,
+        'type' => 'order',
+        'title' => 'Barang Diterima / Pesanan Selesai',
+        'message' => "Pembeli {$order->buyer->name} telah mengonfirmasi bahwa pesanan {$order->order_number} telah diterima dengan baik.",
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'buyer_name' => $order->buyer->name,
+          'url' => "/seller/pesanan/{$order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
+
+    Notification::create([
+      'user_id' => $order->buyer_id,
+      'type' => 'order',
+      'title' => 'Pesanan Selesai',
+      'message' => "Pesanan {$order->order_number} telah selesai. Terima kasih telah berbelanja produk UMKM di Kabita!",
+      'data' => [
+        'order_id' => $order->id,
+        'order_number' => $order->order_number,
+        'url' => "/order-detail?id={$order->id}",
+      ],
+      'is_read' => false,
+    ]);
 
     return response()->json([
       'success' => true,

@@ -187,6 +187,7 @@ export interface Order {
   shipping_cost: string;
   total_amount: string;
   shipping_method: string;
+  courier?: string | null;
   payment_method: string;
   status: OrderStatus;
   shipping_address: string;
@@ -228,6 +229,7 @@ export interface Payment {
   amount: string;
   status: PaymentStatus;
   proof_image: string | null;
+  rejection_reason?: string | null;
   created_at: string | null;
   updated_at: string | null;
   order?: {
@@ -505,4 +507,49 @@ export interface LowStockProduct {
   status: ProductStatus;
   shop?: Shop;
   category?: Category;
+}
+
+// ─────────────────────────────────────────────────────
+// CHAT & MESSAGING
+// ─────────────────────────────────────────────────────
+
+export interface ChatMessage {
+  id: number;
+  conversation_id: number;
+  sender_id: number;
+  sender_name?: string;
+  sender_role?: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface Conversation {
+  id: number;
+  order_id: number | null;
+  buyer_id: number;
+  seller_id: number;
+  shop_id: number;
+  buyer?: User;
+  seller?: User;
+  shop?: Shop;
+  order?: Order;
+  messages: ChatMessage[];
+  last_message_at: string | null;
+  created_at: string;
+}
+
+// ─────────────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────────────
+
+export interface AppNotification {
+  id: number;
+  type: 'chat' | 'order' | 'product' | 'system';
+  title: string;
+  message: string;
+  data: Record<string, any> | null;
+  is_read: boolean;
+  created_at: string;
+  time_ago?: string;
 }

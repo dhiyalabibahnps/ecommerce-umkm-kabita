@@ -8,31 +8,36 @@ defineProps<{
 
 const formatRupiah = (val: string | number) => {
   const num = typeof val === 'string' ? parseFloat(val) : val;
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0,
+  }).format(num || 0);
 };
 </script>
 
 <template>
-  <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm mb-6">
-    <h3 class="text-sm font-bold text-gray-800 border-b border-gray-100 pb-3 mb-4">Rincian Pembayaran</h3>
+  <div class="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs mb-4">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
+      <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Rincian Pembayaran</h3>
+      <span class="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full font-semibold">
+        {{ paymentMethod === 'transfer' ? 'Transfer Bank' : 'COD' }}
+      </span>
+    </div>
 
-    <div class="space-y-2.5 text-xs text-gray-600">
+    <div class="space-y-2 text-xs text-slate-600">
       <div class="flex justify-between">
         <span>Subtotal Produk</span>
-        <span class="font-medium text-gray-800">{{ formatRupiah(subtotal) }}</span>
+        <span class="font-medium text-slate-800">{{ formatRupiah(subtotal) }}</span>
       </div>
       <div class="flex justify-between">
         <span>Ongkos Kirim</span>
-        <span class="font-medium text-gray-800">{{ formatRupiah(shippingCost) }}</span>
+        <span class="font-medium text-slate-800">{{ formatRupiah(shippingCost) }}</span>
       </div>
-      <div class="flex justify-between border-t border-gray-100 pt-2 font-bold text-sm text-gray-900">
-        <span>Total Belanja</span>
-        <span class="text-blue-600">{{ formatRupiah(totalAmount) }}</span>
+      <div class="flex justify-between border-t border-slate-100 pt-2 font-bold text-xs text-slate-900">
+        <span>Total Pembayaran</span>
+        <span class="text-sm text-blue-600 font-extrabold">{{ formatRupiah(totalAmount) }}</span>
       </div>
-    </div>
-
-    <div class="mt-4 p-2.5 bg-gray-50 rounded-lg text-center text-xs font-semibold text-gray-600 uppercase">
-      Metode: {{ paymentMethod }}
     </div>
   </div>
 </template>

@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import Button from 'primevue/button';
-import Message from 'primevue/message';
+import Dialog from 'primevue/dialog';
+import InputText from 'primevue/inputtext';
 import ProgressSpinner from 'primevue/progressspinner';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
+import OrderStatusBadge from '@/components/ui/OrderStatusBadge.vue';
+import { FLAT_SHIPPING_OPTIONS } from '@/constants/courier';
 import { getApiErrorMessage } from '@/services/apiError';
 import { sellerOrderService } from '@/services/sellerOrderService';
+import { useChatStore } from '@/stores/chat';
 import type { Order } from '@/types';
 
 // Sub Components
@@ -19,15 +23,21 @@ import OrderStatusAlert from '../components/order-detail/OrderStatusAlert.vue';
 import OrderStepper from '../components/order-detail/OrderStepper.vue';
 import OrderTimeline from '../components/order-detail/OrderTimeline.vue';
 import OrderTransferProof from '../components/order-detail/OrderTransferProof.vue';
+import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal.vue';
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const chatStore = useChatStore();
 
 const isLoading = ref(true);
 const isActionLoading = ref(false);
 const order = ref<Order | null>(null);
 const errorMessage = ref('');
+const shippingModalVisible = ref(false);
+const invoiceModalVisible = ref(false);
+const trackingNumberInput = ref('');
+const courierInput = ref('JNE REG');
 
 const fetchOrderDetail = async () => {
   isLoading.value = true;
@@ -41,16 +51,62 @@ const fetchOrderDetail = async () => {
   }
 };
 
-const printInvoice = () => window.print();
+const handleOpenChat = () => {
+  if (order.value) {
+    chatStore.openOrderChat(
+      order.value.id,
+      order.value.order_number,
+      order.value.buyer?.name,
+      'seller'
+    );
+  }
+};
 
-const handleShipOrder = async () => {
+const openShipModal = () => {
+  if (!order.value) return;
+  if (order.value.shipping_method === 'cod') {
+    handleShipOrderDirect();
+    return;
+  }
+  trackingNumberInput.value = order.value.tracking_number || '';
+  courierInput.value = order.value.courier || 'JNE REG';
+  shippingModalVisible.value = true;
+};
+
+const handleShipOrderDirect = async () => {
   if (!order.value) return;
   isActionLoading.value = true;
   try {
-    order.value = await sellerOrderService.ship(order.value.id, { tracking_number: order.value.tracking_number || undefined });
+    order.value = await sellerOrderService.ship(order.value.id, {
+      tracking_number: order.value.tracking_number || undefined,
+      courier: order.value.courier || undefined,
+    });
     toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pesanan berhasil dikirim.', life: 3000 });
   } catch (error) {
     toast.add({ severity: 'error', summary: 'Gagal', detail: getApiErrorMessage(error, 'Status pesanan gagal diperbarui.'), life: 4000 });
+  } finally {
+    isActionLoading.value = false;
+  }
+};
+
+const handleConfirmShipModal = async () => {
+  if (!order.value) return;
+
+  if (order.value.shipping_method !== 'cod' && !trackingNumberInput.value.trim()) {
+    toast.add({ severity: 'warn', summary: 'Wajib Diisi', detail: 'Nomor resi pengiriman wajib diisi.', life: 3000 });
+    return;
+  }
+
+  isActionLoading.value = true;
+  try {
+    order.value = await sellerOrderService.ship(order.value.id, {
+      tracking_number: trackingNumberInput.value.trim(),
+      courier: courierInput.value.trim() || undefined,
+    });
+    shippingModalVisible.value = false;
+    toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Nomor resi disimpan dan pesanan berhasil dikirim.', life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Gagal', detail: getApiErrorMessage(error, 'Pengiriman pesanan gagal.'), life: 4000 });
   } finally {
     isActionLoading.value = false;
   }
@@ -82,77 +138,238 @@ const handleCodComplete = async () => {
   }
 };
 
-onMounted(() => {
-  fetchOrderDetail();
-});
+const formatDate = (value?: string) =>
+  value
+    ? new Date(value).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : '—';
+
+const courierOptionsForSelect = FLAT_SHIPPING_OPTIONS.map((opt) => ({
+  label: `${opt.courierName} ${opt.serviceCode} (${opt.serviceName})`,
+  value: `${opt.courierName} ${opt.serviceCode}`,
+}));
+
+onMounted(fetchOrderDetail);
 </script>
 
 <template>
-  <div class="p-6 relative min-h-screen bg-slate-50">
+  <div class="mx-auto max-w-6xl pb-12">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex flex-col items-center justify-center py-24 text-slate-400">
+      <ProgressSpinner style="width: 40px; height: 40px" />
+      <p class="mt-3 text-xs">Memuat detail pesanan...</p>
+    </div>
 
-    <Transition name="fade">
-      <div v-if="isLoading"
-        class="fixed inset-0 z-50 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
-        <ProgressSpinner style="width: 50px; height: 50px" strokeWidth="4" animationDuration=".8s" />
-        <span class="text-sm font-semibold text-gray-600">Memuat Detail Pesanan...</span>
+    <!-- Error State -->
+    <div v-else-if="errorMessage || !order" class="rounded-2xl border border-rose-100 bg-white p-10 text-center shadow-2xs">
+      <i class="pi pi-exclamation-triangle text-3xl text-rose-500"></i>
+      <h3 class="mt-3 font-bold text-slate-800">Gagal Memuat Pesanan</h3>
+      <p class="mt-1 text-xs text-rose-600">{{ errorMessage || 'Pesanan tidak ditemukan.' }}</p>
+      <div class="mt-5 flex justify-center gap-2">
+        <Button label="Kembali ke Pesanan" severity="secondary" outlined size="small" class="rounded-lg! text-xs!" @click="router.push('/seller/pesanan')" />
+        <Button label="Coba Lagi" icon="pi pi-refresh" size="small" class="rounded-lg! text-xs!" @click="fetchOrderDetail" />
       </div>
-    </Transition>
+    </div>
 
-    <Message v-if="errorMessage" severity="error" class="mx-auto max-w-6xl">{{ errorMessage }}</Message>
-
-    <div v-if="order && !errorMessage" class="max-w-6xl mx-auto space-y-6">
+    <!-- Order Detail View -->
+    <div v-else class="space-y-4">
+      <!-- Back button & Top bar -->
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <Button icon="pi pi-arrow-left" text rounded severity="secondary" @click="router.back()" />
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 transition cursor-pointer"
+          @click="router.push('/seller/pesanan')"
+        >
+          <i class="pi pi-arrow-left text-[11px]"></i>
+          <span>Kembali ke Daftar Pesanan</span>
+        </button>
+      </div>
+
+      <!-- Modern Compact Order Header -->
+      <div class="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 class="text-xl font-bold text-gray-800">Detail {{ order.order_number }}</h1>
-            <p class="text-xs text-gray-400 mt-0.5">{{ order.created_at }}</p>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <h1 class="font-mono text-base font-black tracking-tight text-slate-900 sm:text-lg">
+                {{ order.order_number }}
+              </h1>
+              <OrderStatusBadge :status="order.status" size="normal" role="seller" />
+            </div>
+            <p class="mt-1 text-xs text-slate-500">
+              Pembeli: <strong class="text-slate-800">{{ order.buyer?.name || 'Pembeli' }}</strong> • {{ formatDate(order.created_at) }}
+            </p>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex flex-wrap items-center gap-2">
+            <Button
+              label="Cetak Invoice"
+              icon="pi pi-print"
+              severity="secondary"
+              outlined
+              size="small"
+              class="text-xs! rounded-lg! text-slate-700! border-slate-300! hover:bg-slate-50!"
+              @click="invoiceModalVisible = true"
+            />
+            <Button
+              label="Chat Pembeli"
+              icon="pi pi-comments"
+              severity="secondary"
+              outlined
+              size="small"
+              class="text-xs! rounded-lg! text-blue-600! border-blue-200! hover:bg-blue-50!"
+              @click="handleOpenChat"
+            />
+
+            <!-- Contextual Status Actions -->
+            <template v-if="order.status === 'processing'">
+              <Button
+                label="Proses Pesanan"
+                icon="pi pi-box"
+                size="small"
+                class="bg-blue-600! border-blue-600! text-xs! rounded-lg! font-bold!"
+                :loading="isActionLoading"
+                @click="handlePackOrder"
+              />
+            </template>
+
+            <template v-else-if="order.status === 'packed'">
+              <Button
+                label="Konfirmasi Pengiriman"
+                icon="pi pi-send"
+                size="small"
+                class="bg-blue-600! border-blue-600! text-xs! rounded-lg! font-bold!"
+                :loading="isActionLoading"
+                @click="openShipModal"
+              />
+            </template>
+
+            <template v-else-if="order.status === 'cod_meeting'">
+              <Button
+                label="Selesaikan Pesanan COD"
+                icon="pi pi-check"
+                severity="success"
+                size="small"
+                class="text-xs! rounded-lg! font-bold!"
+                :loading="isActionLoading"
+                @click="handleCodComplete"
+              />
+            </template>
           </div>
         </div>
-
-        <div class="flex items-center gap-2">
-          <Button icon="pi pi-print" label="Cetak Invoice" outlined severity="secondary" size="small"
-            @click="printInvoice" />
-          <Button v-if="order.status === 'processing'" label="Kemas Pesanan" icon="pi pi-box" size="small"
-            :loading="isActionLoading" @click="handlePackOrder" />
-          <Button v-if="order.status === 'packed'" label="Konfirmasi Pengiriman" icon="pi pi-send" size="small"
-            :loading="isActionLoading" @click="handleShipOrder" />
-          <Button v-if="order.status === 'cod_meeting'" label="Selesaikan Pesanan COD" icon="pi pi-check" size="small"
-            :loading="isActionLoading" @click="handleCodComplete" />
-        </div>
       </div>
 
-      <OrderStepper :status="order.status" :shippingMethod="order.shipping_method"
-        :isVerified="order.payment?.status === 'verified'" />
+      <!-- Stepper Component -->
+      <OrderStepper
+        :status="order.status"
+        :shippingMethod="order.shipping_method"
+        :isVerified="order.payment?.status === 'verified'"
+      />
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-8">
+      <!-- Content Grid: Left Main + Right Sidebar -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <!-- Main Content -->
+        <div class="lg:col-span-8 space-y-4">
           <OrderStatusAlert :status="order.status" :notes="order.notes" :shippingMethod="order.shipping_method" />
           <OrderTransferProof :proofImage="order.payment?.proof_image ?? undefined" />
           <OrderProductList :items="order.items" :notes="order.notes" />
-          <OrderTimeline :status="order.status" :createdAt="order.created_at" :updatedAt="order.updated_at" />
+          <OrderTimeline
+            :status="order.status"
+            :shippingMethod="order.shipping_method"
+            :paymentMethod="order.payment_method"
+            :isVerified="order.payment?.status === 'verified'"
+            :hasProofImage="Boolean(order.payment?.proof_image)"
+            :courier="order.courier"
+            :trackingNumber="order.tracking_number"
+            :createdAt="order.created_at"
+            :updatedAt="order.updated_at"
+          />
         </div>
 
-        <div class="lg:col-span-4">
-          <OrderBuyerCard :buyer="order.buyer" :shippingAddress="order.shipping_address" />
-          <OrderShippingCard :shippingMethod="order.shipping_method" :trackingNumber="order.tracking_number"
-            :shippingAddress="order.shipping_address" />
-          <OrderPaymentSummaryCard :subtotal="order.subtotal" :shippingCost="order.shipping_cost"
-            :totalAmount="order.total_amount" :paymentMethod="order.payment_method" />
+        <!-- Sidebar Info -->
+        <div class="lg:col-span-4 space-y-4">
+          <OrderBuyerCard :buyer="order.buyer" :shippingAddress="order.shipping_address" @chat="handleOpenChat" />
+          <OrderShippingCard
+            :shippingMethod="order.shipping_method"
+            :courier="order.courier"
+            :trackingNumber="order.tracking_number"
+            :shippingAddress="order.shipping_address"
+            :status="order.status"
+          />
+          <OrderPaymentSummaryCard
+            :subtotal="order.subtotal"
+            :shippingCost="order.shipping_cost"
+            :totalAmount="order.total_amount"
+            :paymentMethod="order.payment_method"
+          />
         </div>
       </div>
     </div>
+
+    <!-- Modal Konfirmasi Pengiriman & Input Resi -->
+    <Dialog
+      v-model:visible="shippingModalVisible"
+      modal
+      header="Konfirmasi Pengiriman Pesanan"
+      :style="{ width: 'min(460px, 92vw)' }"
+      class="rounded-2xl!"
+    >
+      <div class="space-y-4 pt-1">
+        <div class="rounded-xl bg-slate-50 p-3 border border-slate-100 text-xs">
+          <p class="text-slate-500">Nomor Order: <strong class="text-slate-800">{{ order?.order_number }}</strong></p>
+          <p class="text-slate-500 mt-0.5">Tujuan: <span class="text-slate-700">{{ order?.shipping_address }}</span></p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700">Layanan Kurir <span class="text-rose-500">*</span></label>
+          <select
+            v-model="courierInput"
+            class="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-blue-500 focus:outline-none"
+          >
+            <option v-for="item in courierOptionsForSelect" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700">Nomor Resi Pengiriman <span class="text-rose-500">*</span></label>
+          <InputText
+            v-model="trackingNumberInput"
+            placeholder="Contoh: JNE123456789 / SPXID0987654321"
+            class="w-full text-xs! py-2.5! rounded-lg!"
+          />
+          <p class="text-[11px] text-slate-400">Nomor resi wajib diisi agar pembeli dapat melacak paket.</p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+          <Button
+            label="Batal"
+            severity="secondary"
+            outlined
+            size="small"
+            class="rounded-lg! text-xs!"
+            @click="shippingModalVisible = false"
+          />
+          <Button
+            label="Kirim Pesanan"
+            icon="pi pi-send"
+            size="small"
+            class="bg-blue-600! border-blue-600! rounded-lg! text-xs! font-bold!"
+            :loading="isActionLoading"
+            @click="handleConfirmShipModal"
+          />
+        </div>
+      </div>
+    </Dialog>
+
+    <!-- Modal Cetak Invoice -->
+    <OrderInvoiceModal
+      v-model:visible="invoiceModalVisible"
+      :order="order"
+    />
   </div>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

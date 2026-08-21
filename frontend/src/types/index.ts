@@ -52,6 +52,7 @@ export type {
     OrderItem,
     Payment, PlatformStats, Product,
     ProductImage, SalesRow, SellerOverview, SellerTopProduct, Shop, TopProduct, TopSeller,
+    ChatMessage, Conversation, AppNotification,
     // Core entities
     User
 } from './entities';

@@ -20,3 +20,6 @@ export type PaymentStatus = 'pending' | 'verified' | 'rejected';
 
 /** From App\Enums\ShopStatus */
 export type ShopStatus = 'pending' | 'verified' | 'rejected';
+
+/** From App\Enums\Courier */
+export type CourierCode = 'JNE' | 'JNT' | 'SICEPAT' | 'ANTERAJA' | 'POS' | 'NINJA';

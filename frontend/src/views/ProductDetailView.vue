@@ -3,18 +3,22 @@ import { getApiErrorMessage } from '@/services/apiError'
 import { publicProductService } from '@/services/publicProductService'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
+import { useChatStore } from '@/stores/chat'
 import type { Product } from '@/types'
 import { formatRupiah } from '@/utils/format'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref, watchEffect } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const slug = computed(() => String(route.params.id ?? ''))
 const product = ref<Product | null>(null)
 const isLoadingGet = ref<boolean>(true)
+const showChatDialog = ref<boolean>(false)
 // const productStore = useProductStore()
 const cartStore = useCartStore()
+const chatStore = useChatStore()
 const toast = useToast()
 const authStore = useAuthStore();
 
@@ -82,19 +86,73 @@ const handleAddToCart = async () => {
   })
 }
 
+const goToShop = () => {
+  if (product.value?.shop) {
+    const slugOrId = product.value.shop.slug || product.value.shop.id;
+    router.push(`/toko/${slugOrId}`);
+  }
+};
+
+const openChatWithSeller = () => {
+  if (!authStore.user) {
+    toast.add({
+      severity: 'info',
+      summary: 'Perhatian',
+      detail: 'Silakan masuk terlebih dahulu untuk mengirim pesan ke penjual',
+      life: 3000,
+    });
+    router.push('/login');
+    return;
+  }
+  if (product.value?.shop?.id) {
+    chatStore.openShopChat(product.value.shop.id, product.value.shop.name, product.value.name);
+  }
+};
+
 const handleBuyNow = async () => {
   if (!product.value) return
+  if (!authStore.user) {
+    toast.add({
+      severity: 'info',
+      summary: 'Perhatian',
+      detail: 'Silakan masuk terlebih dahulu untuk membeli produk',
+      life: 3000,
+    })
+    router.push('/login')
+    return
+  }
+
   const success = await cartStore.addToCart(product.value, quantity.value)
   if (!success) {
     toast.add({ severity: 'error', summary: 'Gagal', detail: cartStore.error || 'Gagal menambahkan produk', life: 3000 })
     return
   }
-  toast.add({
-    severity: 'success',
-    summary: 'Siap checkout',
-    detail: `${product.value.name} sudah siap dibeli`,
-    life: 3000,
-  })
+
+  const cartItem = cartStore.flatItems.find(
+    (i) => i.product_id === product.value?.id || i.product?.id === product.value?.id
+  )
+
+  if (cartStore.cart && cartItem) {
+    const shopGroup = cartStore.cart.groups_by_shop.find((g) =>
+      g.items.some((i) => i.id === cartItem.id)
+    )
+    if (shopGroup) {
+      const selectedCheckoutItems = [
+        {
+          ...cartStore.cart,
+          groups_by_shop: [
+            {
+              ...shopGroup,
+              items: [cartItem],
+            },
+          ],
+        },
+      ]
+      localStorage.setItem('checkoutItems', JSON.stringify(selectedCheckoutItems))
+    }
+  }
+
+  router.push('/checkout')
 }
 </script>
 
@@ -126,127 +184,111 @@ const handleBuyNow = async () => {
 
       <section v-if="product" class="grid gap-8 sm:grid-cols-[5fr_7fr]">
         <div class="space-y-4">
-          <div class="rounded-md border detail-page__border bg-white p-4 shadow-sm">
-            <div class="aspect-square overflow-hidden rounded-xl bg-slate-50">
+          <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="aspect-square overflow-hidden rounded-xl bg-slate-50 flex items-center justify-center">
               <img :src="selectedImage" :alt="product.name" class="h-full w-full object-contain" />
             </div>
           </div>
 
           <div class="grid grid-cols-4 gap-3">
             <button v-for="(image, index) in product.images" :key="image.id" type="button"
-              class="detail-page__gallery-thumb rounded-lg border bg-white p-1 transition focus:outline-none"
-              :class="{ 'detail-page__gallery-thumb--active': selectedImageIndex === index }"
+              class="rounded-xl border bg-white p-1 transition focus:outline-none cursor-pointer"
+              :class="selectedImageIndex === index ? 'border-blue-600 ring-2 ring-blue-500/20 shadow-xs' : 'border-slate-200 hover:border-slate-300'"
               @click="changeImage(index)">
               <img :src="image.url ?? 'https://placehold.co/120x120?text=Gambar'" :alt="`Thumbnail ${index + 1}`"
-                class="h-20 w-full object-contain" />
+                class="h-20 w-full object-contain rounded-lg" />
             </button>
           </div>
         </div>
 
         <div class="space-y-6">
           <div class="space-y-3">
-            <h1 class="text-2xl font-bold leading-tight text-slate-950 lg:text-3xl">
+            <h1 class="text-2xl font-bold leading-tight text-slate-900 lg:text-3xl">
               {{ product.name }}
             </h1>
 
-            <div class="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-              <!-- <div class="flex items-center gap-2">
-                <span
-                  class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-yellow-100 text-yellow-700">
-                  <i class="pi pi-star text-xs"></i>
-                </span>
-                <span class="font-semibold text-tertiary-container">4.9</span>
-                <span>(120 Ulasan)</span>
-              </div> -->
-              <!-- <span class="h-1 w-1 rounded-full bg-slate-300" aria-hidden="true"></span> -->
-              <!-- <span>Terjual 350+</span> -->
-            </div>
-
-            <div class="text-3xl font-bold text-primary leading-tight">
+            <div class="text-3xl font-extrabold text-blue-600 leading-tight">
               {{ formatRupiah(product.price) }}
             </div>
-
-            <!-- <div
-              class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-[#b4c5ff] px-3 py-2 text-sm font-medium text-on-primary-fixed">
-              <span class="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-white">
-                <i class="pi pi-truck" style="font-size: 0.65rem"></i>
-              </span>
-              Gratis Ongkir ke Jakarta Selatan
-            </div> -->
           </div>
 
-          <div class="space-y-4 rounded-md border detail-page__border bg-white p-4">
-
+          <div class="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
             <div class="flex flex-row flex-wrap items-center gap-4 min-w-30">
-              <!-- <div class=""> -->
-              <div class="text-sm font-bold text-slate-950">Kuantitas</div>
+              <div class="text-sm font-bold text-slate-900">Kuantitas</div>
               <div>
-                <div v-show="authStore"
-                  class="mt-2 inline-flex overflow-hidden rounded-md border detail-page__quantity-control bg-white mb-2">
+                <div class="inline-flex overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs">
                   <button type="button"
-                    class="px-2 text-lg text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
+                    class="px-3 py-1.5 text-base text-slate-600 transition hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                     @click="decrementQuantity" :disabled="quantity <= 1">
                     −
                   </button>
-                  <div class="flex min-w-12 items-center justify-center px-4 text-sm font-semibold text-slate-900">
+                  <div class="flex min-w-12 items-center justify-center px-4 text-sm font-bold text-slate-900 border-x border-slate-200">
                     {{ quantity }}
                   </div>
                   <button type="button"
-                    class="px-2 text-lg text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed"
+                    class="px-3 py-1.5 text-base text-slate-600 transition hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                     @click="incrementQuantity" :disabled="quantity >= product.stock">
                     +
                   </button>
                 </div>
               </div>
-              <div class="text-sm text-slate-500">Tersedia: {{ product.stock }}</div>
-
-              <!-- </div> -->
+              <div class="text-xs text-slate-500 font-medium">Stok Tersedia: <strong class="text-slate-800">{{ product.stock }}</strong></div>
             </div>
 
-            <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center pt-2">
               <button type="button" @click="handleAddToCart"
-                class="border-2 border-solid border-primary bg-white inline-flex flex-1 items-center justify-center gap-2 rounded-md p-2 text-sm font-semibold transition hover:bg-slate-200">
-                <i class="pi pi-shopping-cart"></i>
+                class="border-2 border-blue-600 bg-white text-blue-600 hover:bg-blue-50 inline-flex flex-1 items-center justify-center gap-2 rounded-xl p-3 text-sm font-bold transition shadow-xs cursor-pointer">
+                <i class="pi pi-shopping-cart text-base"></i>
                 Tambah Keranjang
               </button>
               <button type="button" @click="handleBuyNow"
-                class=" border-2 border-solid border-primary bg-primary inline-flex flex-1 items-center justify-center rounded-md p-2 text-sm font-semibold text-white transition hover:bg-[#0037a0]">
+                class="border-2 border-blue-600 bg-blue-600 text-white hover:bg-blue-700 inline-flex flex-1 items-center justify-center gap-2 rounded-xl p-3 text-sm font-bold transition shadow-md shadow-blue-500/20 cursor-pointer">
+                <i class="pi pi-bolt text-base"></i>
                 Beli Sekarang
               </button>
             </div>
           </div>
 
-          <div class="rounded-md border detail-page__border bg-surface-container p-4">
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 shadow-xs">
             <div class="flex flex-wrap items-center gap-4">
-              <div class="flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white">
-                <i class="pi pi-store text-lg text-slate-700"></i>
+              <div class="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white shadow-2xs text-blue-600">
+                <i class="pi pi-shop text-lg"></i>
               </div>
               <div class="min-w-0 flex-1">
-                <div class="text-base font-bold text-slate-950">{{ product.shop?.name ?? 'DigiCam Official' }}</div>
-                <div class="text-sm font-medium text-slate-500">Kota Bandung</div>
+                <div class="text-base font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition" @click="goToShop">
+                  {{ product.shop?.name ?? 'Toko Seller' }}
+                </div>
+                <div class="text-xs font-medium text-slate-500 mt-0.5">{{ product.shop?.address ?? 'Indonesia' }}</div>
               </div>
-              <button type="button"
-                class="detail-page__secondary-button rounded-md border px-4 py-3 text-sm font-semibold transition hover:bg-slate-50">
-                Kunjungi Toko
-              </button>
+              <div class="flex items-center gap-2">
+                <button type="button" @click="openChatWithSeller"
+                  class="rounded-xl border border-blue-600 bg-white text-blue-600 px-3.5 py-2 text-xs font-bold transition hover:bg-blue-50 cursor-pointer inline-flex items-center gap-1.5 shadow-2xs">
+                  <i class="pi pi-comments text-xs"></i>
+                  Chat Penjual
+                </button>
+                <button type="button" @click="goToShop"
+                  class="rounded-xl border border-slate-300 bg-white text-slate-700 px-3.5 py-2 text-xs font-bold transition hover:bg-slate-50 hover:border-slate-400 cursor-pointer shadow-2xs">
+                  Kunjungi Toko
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="space-y-4 rounded-md border detail-page__border bg-white p-4">
+          <div class="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
             <div>
-              <h2 class="text-xl font-bold text-slate-950">Deskripsi Produk</h2>
+              <h2 class="text-base font-bold text-slate-900">Deskripsi Produk</h2>
             </div>
-            <div class="space-y-4 text-sm leading-7 text-slate-600">
+            <div class="text-xs sm:text-sm leading-relaxed text-slate-600 whitespace-pre-line">
               <p>{{ product.description }}</p>
             </div>
-            <!-- <a href="#" class="text-sm font-semibold text-primary hover:underline">Baca Selengkapnya</a> -->
           </div>
         </div>
       </section>
 
-      <section v-else class="rounded-md border detail-page__border bg-white p-8 text-center text-slate-700 shadow-sm">
-        <p class="text-lg font-semibold">Produk tidak ditemukan.</p>
-        <p class="mt-2 text-sm text-slate-500">Silakan kembali ke daftar produk atau cari produk lain.</p>
+      <section v-else class="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-700 shadow-sm">
+        <i class="pi pi-inbox text-4xl text-slate-300 mb-3 block"></i>
+        <p class="text-lg font-bold text-slate-900">Produk tidak ditemukan.</p>
+        <p class="mt-1 text-xs text-slate-500">Silakan kembali ke daftar produk atau cari produk UMKM lainnya.</p>
       </section>
     </div>
   </div>

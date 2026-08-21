@@ -23,6 +23,7 @@ class Order extends Model
     'shipping_cost',
     'total_amount',
     'shipping_method',
+    'courier',
     'payment_method',
     'status',
     'shipping_address',
@@ -58,5 +59,10 @@ class Order extends Model
   public function payment(): HasOne
   {
     return $this->hasOne(Payment::class);
+  }
+
+  public function conversation(): HasOne
+  {
+    return $this->hasOne(Conversation::class);
   }
 }

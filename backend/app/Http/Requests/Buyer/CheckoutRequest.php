@@ -28,6 +28,9 @@ class CheckoutRequest extends FormRequest
       'cart_items' => ['required', 'array'],
       'cart_items.*' => ['required', 'integer', 'exists:cart_items,id'],
       'shipping_method' => ['required', Rule::in(['cod', 'kurir'])],
+      'courier' => ['nullable', 'string', 'max:100'],
+      'courier_type' => ['nullable', 'string', Rule::in(['reguler', 'express'])],
+      'shipping_cost' => ['nullable', 'numeric', 'min:0'],
       'payment_method' => ['required', Rule::in(['transfer', 'cod'])],
       'shipping_address' => [
         Rule::requiredIf(fn() => $this->input('shipping_method') === 'kurir' && !$this->filled('location_id')),

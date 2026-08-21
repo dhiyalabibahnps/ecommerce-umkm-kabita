@@ -248,8 +248,8 @@ const formatCurrency = (val: number) => {
           </div>
 
           <!-- KOLOM KANAN (Ringkasan Belanja) -->
-          <div class="lg:col-span-4 space-y-4">
-            <div class="bg-white rounded p-6 shadow-sm border border-slate-100 space-y-4">
+          <div class="lg:col-span-4 space-y-4 sticky top-24">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
               <h2 class="font-bold text-slate-800 text-sm">Ringkasan Belanja</h2>
 
               <div class="space-y-2 text-xs border-b border-slate-100 pb-4">
@@ -268,7 +268,7 @@ const formatCurrency = (val: number) => {
               <!-- Tombol Beli / Checkout -->
               <Button :loading="loadingToCheckout" :label="`Beli (${totalSelectedCount})`"
                 :disabled="totalSelectedCount === 0 || loadingToCheckout"
-                class="w-full bg-emerald-500! border-emerald-500! py-3! text-xs! font-bold! rounded! shadow-sm! hover:bg-emerald-600! disabled:opacity-50! disabled:cursor-not-allowed! mt-2"
+                class="w-full bg-blue-600! border-blue-600! py-3! text-xs! font-bold! rounded-xl! shadow-sm! hover:bg-blue-700! disabled:opacity-50! disabled:cursor-not-allowed! mt-2"
                 @click="goToCheckout" />
             </div>
           </div>

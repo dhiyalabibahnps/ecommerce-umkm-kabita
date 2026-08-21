@@ -12,6 +12,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CodLocation;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -67,12 +68,15 @@ class CheckoutController extends Controller
     // Get cart weight for weight-based shipping calculation
     $cartWeight = $this->cartCalculationService->calculateCartWeight($cart);
     $courierType = $request->input('courier_type', 'reguler');
-    $shippingCost = $this->cartCalculationService->calculateShippingCostWithWeight(
+    $calculatedCost = $this->cartCalculationService->calculateShippingCostWithWeight(
       $request->input('shipping_method'),
       $cartWeight,
       $courierType
     );
-    $totalAmount = $this->cartCalculationService->calculateTotal($cart, $request->input('shipping_method'));
+    $shippingCost = $request->input('shipping_method') === 'cod'
+      ? 0.0
+      : ($request->filled('shipping_cost') ? (float) $request->input('shipping_cost') : $calculatedCost);
+    $totalAmount = $subtotal + $shippingCost;
 
     // Group items by shop (assuming single shop for now)
     $groupedItems = $this->cartCalculationService->groupItemsByShop($cart);
@@ -103,6 +107,7 @@ class CheckoutController extends Controller
       'shipping_cost' => $shippingCost,
       'total_amount' => $totalAmount,
       'shipping_method' => $request->input('shipping_method'),
+      'courier' => $request->input('courier'),
       'payment_method' => $request->input('payment_method'),
       'status' => OrderStatus::AWAITING_VERIFICATION,
       'shipping_address' => $shippingAddress,
@@ -120,6 +125,45 @@ class CheckoutController extends Controller
       'order_id' => $order->id,
       'amount' => $totalAmount,
       'status' => PaymentStatus::PENDING,
+    ]);
+
+    // Create notification for seller
+    $order->load(['shop.seller', 'items.product']);
+    $sellerId = $order->shop?->seller_id;
+    if ($sellerId) {
+      $itemNames = $order->items->map(fn($item) => $item->product?->name)->filter()->take(2)->join(', ');
+      $itemCount = $order->items->count();
+      $summaryText = $itemCount > 2 ? "{$itemNames} dan lainnya ({$itemCount} produk)" : "{$itemNames} ({$itemCount} produk)";
+
+      Notification::create([
+        'user_id' => $sellerId,
+        'type' => 'order',
+        'title' => 'Pesanan Baru Masuk',
+        'message' => "Pesanan {$order->order_number} dari {$user->name}: {$summaryText} - Total Rp " . number_format($totalAmount, 0, ',', '.'),
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'buyer_name' => $user->name,
+          'total_amount' => $totalAmount,
+          'url' => "/seller/pesanan/{$order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
+
+    // Create notification for buyer
+    Notification::create([
+      'user_id' => $user->id,
+      'type' => 'order',
+      'title' => 'Pesanan Berhasil Dibuat',
+      'message' => "Pesanan {$order->order_number} berhasil dibuat. Total pembayaran Rp " . number_format($totalAmount, 0, ',', '.') . ".",
+      'data' => [
+        'order_id' => $order->id,
+        'order_number' => $order->order_number,
+        'total_amount' => $totalAmount,
+        'url' => "/order-detail?id={$order->id}",
+      ],
+      'is_read' => false,
     ]);
 
     // Load relationships for the response

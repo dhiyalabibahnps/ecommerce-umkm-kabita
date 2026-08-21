@@ -56,9 +56,13 @@ export interface UpdateCartItemRequest {
 export interface CheckoutRequest {
   cart_items: number[];
   shipping_method: 'cod' | 'kurir';
+  courier?: string | null;
+  courier_type?: 'reguler' | 'express' | null;
+  shipping_cost?: number | null;
   payment_method: 'transfer' | 'cod';
   shipping_address: string;
   cod_location?: string;
+  location_id?: number | null;
   notes?: string | null;
 }
 
@@ -181,6 +185,7 @@ export interface UpdateProductRequest {
 
 export interface ShipOrderRequest {
   tracking_number?: string | null;
+  courier?: string | null;
 }
 
 // ─────────────────────────────────────────────────────

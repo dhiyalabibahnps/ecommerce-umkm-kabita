@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppFooter from '@/components/layout/AppFooter.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
+import GlobalChatDialog from '@/components/chat/GlobalChatDialog.vue'
 import Toast from 'primevue/toast'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -22,6 +23,8 @@ const isSellerOrAdminPage = computed(() => {
     </main>
 
     <AppFooter v-if="!isSellerOrAdminPage" />
+
+    <GlobalChatDialog />
 
     <Toast position="bottom-right" />
   </div>

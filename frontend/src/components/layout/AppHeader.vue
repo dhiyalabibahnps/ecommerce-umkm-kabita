@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
+import NotificationBell from '@/components/layout/NotificationBell.vue'
 import Button from 'primevue/button'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -17,11 +18,15 @@ const isLoggedIn = computed(() => !!authStore.user)
 const cartItemCount = computed(() => cartStore.totalItems)
 
 onMounted(() => {
-  if (authStore.user) void cartStore.loadCart()
+  if (authStore.user) {
+    void cartStore.loadCart()
+  }
 })
 
 watch(() => authStore.user?.id, (userId) => {
-  if (userId) void cartStore.loadCart()
+  if (userId) {
+    void cartStore.loadCart()
+  }
 })
 
 watch(isMobileSearchOpen, (open) => {
@@ -95,6 +100,7 @@ async function handleLogout() {
             </span>
           </div>
           <template v-if="isLoggedIn">
+            <NotificationBell role="buyer" />
             <Button label="Profil" icon="pi pi-user" text @click="router.push('/profile/account')" />
             <Button label="Keluar" icon="pi pi-sign-out" text severity="secondary" @click="handleLogout" />
           </template>
@@ -124,8 +130,8 @@ async function handleLogout() {
               {{ cartItemCount }}
             </span>
           </div>
-          <Button icon="pi pi-bell" text aria-label="Notifikasi" class="shrink-0 !p-2" />
           <template v-if="isLoggedIn">
+            <NotificationBell role="buyer" />
             <Button icon="pi pi-user" text aria-label="Profil" class="shrink-0 !p-2"
               @click="router.push('/profile/account')" />
             <Button icon="pi pi-sign-out" text severity="secondary" aria-label="Keluar" class="shrink-0 !p-2"

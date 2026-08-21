@@ -17,26 +17,24 @@ interface StepItem {
 const steps = computed<StepItem[]>(() => {
   if (props.status === 'cancelled') {
     return [
-      { key: 'dipesan', label: 'Dipesan', icon: 'pi pi-shopping-cart' },
-      { key: 'dibayar', label: 'Dibayar', icon: 'pi pi-credit-card' },
+      { key: 'dipesan', label: 'Dipesan', icon: 'pi pi-shopping-bag' },
       { key: 'dibatalkan', label: 'Dibatalkan', icon: 'pi pi-times-circle' },
     ];
   }
 
   if (props.shippingMethod === 'cod') {
     return [
-      { key: 'dipesan', label: 'Dipesan', icon: 'pi pi-shopping-cart' },
-      { key: 'dikonfirmasi', label: 'Dikonfirmasi', icon: 'pi pi-check-circle' },
+      { key: 'dipesan', label: 'Dipesan', icon: 'pi pi-shopping-bag' },
+      { key: 'dikonfirmasi', label: 'Dikonfirmasi', icon: 'pi pi-check' },
       { key: 'dikemas', label: 'Dikemas', icon: 'pi pi-box' },
-      { key: 'dikirim', label: 'Menuju Titik Temu', icon: 'pi pi-truck' },
       { key: 'ketemuan', label: 'Ketemuan', icon: 'pi pi-map-marker' },
       { key: 'selesai', label: 'Selesai', icon: 'pi pi-verified' },
     ];
   }
 
   return [
-    { key: 'dipesan', label: 'Dipesan', icon: 'pi pi-shopping-cart' },
-    { key: 'verifikasi', label: props.isVerified ? 'Dikonfirmasi' : 'Verifikasi', icon: 'pi pi-check-circle' },
+    { key: 'dipesan', label: 'Dipesan', icon: 'pi pi-shopping-bag' },
+    { key: 'dikonfirmasi', label: 'Dikonfirmasi', icon: 'pi pi-check' },
     { key: 'dikemas', label: 'Dikemas', icon: 'pi pi-box' },
     { key: 'dikirim', label: 'Dikirim', icon: 'pi pi-truck' },
     { key: 'selesai', label: 'Selesai', icon: 'pi pi-verified' },
@@ -44,42 +42,73 @@ const steps = computed<StepItem[]>(() => {
 });
 
 const currentStepIndex = computed(() => {
-  if (props.status === 'cancelled') return 2;
+  if (props.status === 'cancelled') return 1;
   switch (props.status) {
-    case 'awaiting_verification': return props.isVerified ? 1 : 0;
-    case 'processing': return 1;
-    case 'packed': return 2;
-    case 'shipped': return 3;
-    case 'cod_meeting': return props.shippingMethod === 'cod' ? 4 : 3;
-    case 'completed': return props.shippingMethod === 'cod' ? 5 : 4;
-    default: return 0;
+    case 'awaiting_verification':
+      return 0;
+    case 'processing':
+      return 1;
+    case 'packed':
+      return 2;
+    case 'shipped':
+      return 3;
+    case 'cod_meeting':
+      return props.shippingMethod === 'cod' ? 3 : 3;
+    case 'completed':
+      return props.shippingMethod === 'cod' ? 4 : 4;
+    default:
+      return 0;
   }
 });
 </script>
 
 <template>
-  <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-6">
-    <div class="relative flex items-center justify-between max-w-2xl mx-auto">
-      <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 z-0" />
+  <div class="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs mb-5">
+    <div class="relative flex items-center justify-between max-w-xl mx-auto px-2">
+      <!-- Background Line -->
+      <div class="absolute left-6 right-6 top-4 h-0.5 bg-slate-200 z-0"></div>
 
-      <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 transition-all duration-500 z-0"
-        :class="status === 'cancelled' ? 'bg-red-500' : 'bg-blue-600'"
-        :style="{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }" />
+      <!-- Active Progress Line -->
+      <div
+        class="absolute left-6 top-4 h-0.5 transition-all duration-500 z-0"
+        :class="status === 'cancelled' ? 'bg-rose-500' : 'bg-blue-600'"
+        :style="{
+          width: steps.length > 1 ? `calc(${((currentStepIndex) / (steps.length - 1)) * 100}% - 3rem)` : '0%'
+        }"
+      ></div>
 
-      <div v-for="(step, idx) in steps" :key="step.key" class="relative z-10 flex flex-col items-center group">
+      <!-- Step Items -->
+      <div
+        v-for="(step, idx) in steps"
+        :key="step.key"
+        class="relative z-10 flex flex-col items-center group min-w-16"
+      >
         <div
-          class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2 font-bold text-sm"
+          class="flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-all duration-300"
           :class="[
             idx < currentStepIndex
-              ? 'bg-blue-600 border-blue-600 text-white'
+              ? 'border-blue-600 bg-blue-600 text-white shadow-2xs'
               : idx === currentStepIndex
-                ? (status === 'cancelled' ? 'bg-red-600 border-red-600 text-white' : 'bg-blue-600 border-blue-600 text-white ring-4 ring-blue-100')
-                : 'bg-gray-100 border-gray-300 text-gray-400'
-          ]">
-          <i :class="step.icon" class="text-base"></i>
+                ? (status === 'cancelled'
+                    ? 'border-rose-600 bg-rose-600 text-white ring-4 ring-rose-100'
+                    : 'border-blue-600 bg-blue-600 text-white ring-4 ring-blue-100 shadow-xs')
+                : 'border-slate-200 bg-white text-slate-400'
+          ]"
+        >
+          <i v-if="idx < currentStepIndex" class="pi pi-check text-[10px]"></i>
+          <i v-else-if="idx === currentStepIndex" :class="[step.icon, 'text-[11px]']"></i>
+          <span v-else class="text-[10px]">{{ idx + 1 }}</span>
         </div>
-        <span class="mt-2 text-xs font-semibold"
-          :class="idx <= currentStepIndex ? (status === 'cancelled' && idx === currentStepIndex ? 'text-red-600' : 'text-blue-600') : 'text-gray-400'">
+        <span
+          class="mt-1.5 text-[11px] font-semibold transition text-center"
+          :class="[
+            idx === currentStepIndex
+              ? (status === 'cancelled' ? 'text-rose-600 font-bold' : 'text-blue-600 font-bold')
+              : idx < currentStepIndex
+                ? 'text-slate-800'
+                : 'text-slate-400'
+          ]"
+        >
           {{ step.label }}
         </span>
       </div>

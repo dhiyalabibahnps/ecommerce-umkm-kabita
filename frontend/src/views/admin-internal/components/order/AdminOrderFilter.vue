@@ -13,8 +13,9 @@ const emit = defineEmits<{
 
 const tabs = [
   { label: 'Semua', value: 'all' },
-  { label: 'Pending / Bayar', value: 'pending' },
+  { label: 'Menunggu Verifikasi', value: 'awaiting_verification' },
   { label: 'Diproses', value: 'processing' },
+  { label: 'Dikemas', value: 'packed' },
   { label: 'Dikirim', value: 'shipped' },
   { label: 'Selesai', value: 'completed' },
   { label: 'Dibatalkan', value: 'cancelled' }

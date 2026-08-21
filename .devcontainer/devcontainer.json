@@ -1,0 +1,39 @@
+{
+  "name": "release/v0.0.1",
+  "image": "mcr.microsoft.com/devcontainers/php:1-8.2-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true
+    }
+  },
+  "forwardPorts": [8000, 5173],
+  "portsAttributes": {
+    "8000": {
+      "label": "Laravel API (Backend)",
+      "onAutoForward": "silent"
+    },
+    "5173": {
+      "label": "Vue Frontend",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/postStart.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "php.validate.executablePath": "/usr/local/bin/php"
+      },
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "vue.volar",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  }
+}
