@@ -1,0 +1,28 @@
+{
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/storage/framework": true,
+    "**/bootstrap/cache": true,
+    "**/public/build": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/vendor/**": true,
+    "**/storage/framework/**": true,
+    "**/bootstrap/cache/**": true
+  },
+  "vue.features.fullInference": false,
+  "typescript.tsserver.maxTsServerMemory": 1536,
+  "intelephense.files.exclude": [
+    "**/node_modules/**",
+    "**/vendor/**",
+    "**/public/js/**",
+    "**/public/build/**",
+    "**/storage/framework/**",
+    "**/bootstrap/cache/**"
+  ],
+  // Tambahan agar PHP tidak memproses file JS/CSS yang besar
+  "intelephense.diagnostics.enable": true,
+  "intelephense.completion.maxInvocations": 100
+}

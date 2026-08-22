@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import ProgressSpinner from 'primevue/progressspinner';
 import { chatService } from '@/services/chatService';
 import { useAuthStore } from '@/stores/auth';
 import { useChatStore } from '@/stores/chat';
 import type { Conversation } from '@/types';
+import Button from 'primevue/button';
+import Dialog from 'primevue/dialog';
+import InputText from 'primevue/inputtext';
+import ProgressSpinner from 'primevue/progressspinner';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const authStore = useAuthStore();
 const chatStore = useChatStore();
@@ -234,27 +234,20 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Dialog
-    :visible="chatStore.isOpen"
-    @update:visible="(val) => !val && chatStore.closeChat()"
-    modal
-    :draggable="false"
-    :dismissableMask="true"
-    :showHeader="false"
-    :style="{ width: 'min(540px, 95vw)', maxWidth: '540px' }"
-    :breakpoints="{ '640px': '95vw' }"
-    class="chat-dialog-modal shadow-2xl"
-    :pt="{
+  <Dialog :visible="chatStore.isOpen" @update:visible="(val) => !val && chatStore.closeChat()" modal :draggable="false"
+    :dismissableMask="true" :showHeader="false" :style="{ width: 'min(540px, 95vw)', maxWidth: '540px' }"
+    :breakpoints="{ '640px': '95vw' }" class="chat-dialog-modal shadow-2xl" :pt="{
       root: { class: 'border-0 rounded-2xl overflow-hidden' },
-      content: { class: 'p-0 overflow-hidden rounded-2xl' },
-    }"
-  >
+      content: { class: 'p-0! overflow-hidden rounded-2xl' },
+    }">
     <!-- Dialog Body Container -->
-    <div class="flex flex-col h-[520px] max-h-[85vh] bg-slate-50 w-full overflow-hidden">
+    <div class="flex flex-col h-130 max-h-[85vh] bg-slate-50 w-full overflow-hidden">
       <!-- Custom Header -->
-      <div class="w-full bg-linear-to-r from-blue-700 to-indigo-800 text-white px-5 py-3.5 flex items-center justify-between shadow-xs shrink-0">
+      <div
+        class="w-full bg-linear-to-r from-blue-700 to-indigo-800 text-white px-5 py-3.5 flex items-center justify-between shadow-xs shrink-0">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-full bg-white/15 backdrop-blur-xs flex items-center justify-center text-white shrink-0 font-bold border border-white/20">
+          <div
+            class="w-10 h-10 rounded-full bg-white/15 backdrop-blur-xs flex items-center justify-center text-white shrink-0 font-bold border border-white/20">
             <i class="pi pi-comments text-lg"></i>
           </div>
           <div class="min-w-0">
@@ -269,11 +262,9 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
-        <button
-          @click="chatStore.closeChat()"
+        <button @click="chatStore.closeChat()"
           class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0 ml-2"
-          aria-label="Tutup"
-        >
+          aria-label="Tutup">
           <i class="pi pi-times text-xs"></i>
         </button>
       </div>
@@ -285,64 +276,44 @@ onUnmounted(() => {
       </div>
 
       <!-- Error State -->
-      <div v-else-if="errorMessage && !conversation?.messages?.length" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+      <div v-else-if="errorMessage && !conversation?.messages?.length"
+        class="flex-1 flex flex-col items-center justify-center p-6 text-center">
         <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mb-2">
           <i class="pi pi-exclamation-triangle text-xl"></i>
         </div>
         <p class="text-xs font-semibold text-slate-700">{{ errorMessage }}</p>
-        <Button
-          label="Coba Lagi"
-          icon="pi pi-refresh"
-          size="small"
-          class="mt-3 text-xs! py-1.5! px-3!"
-          @click="loadMessages(false)"
-        />
+        <Button label="Coba Lagi" icon="pi pi-refresh" size="small" class="mt-3 text-xs! py-1.5! px-3!"
+          @click="loadMessages(false)" />
       </div>
 
       <!-- Messages Timeline -->
-      <div
-        v-else
-        ref="messagesContainer"
-        class="flex-1 overflow-y-auto p-4 space-y-3"
-      >
+      <div v-else ref="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3">
         <!-- Empty State -->
-        <div
-          v-if="!conversation?.messages?.length"
-          class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400"
-        >
+        <div v-if="!conversation?.messages?.length"
+          class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
           <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-2">
             <i class="pi pi-comments text-xl"></i>
           </div>
           <p class="text-xs font-semibold text-slate-700">Belum Ada Pesan</p>
-          <p class="text-[11px] text-slate-400 mt-1 max-w-xs">
+          <p class="text-[11px] text-slate-400 mt-1 w-full">
             Mulai percakapan dengan mengetik pesan atau memilih saran cepat di bawah ini.
           </p>
         </div>
 
         <!-- Messages Bubble List -->
-        <div
-          v-else
-          v-for="msg in conversation.messages"
-          :key="msg.id"
-          class="flex flex-col"
-          :class="msg.sender_id === currentUserId ? 'items-end' : 'items-start'"
-        >
+        <div v-else v-for="msg in conversation.messages" :key="msg.id" class="flex flex-col"
+          :class="msg.sender_id === currentUserId ? 'items-end' : 'items-start'">
           <div class="text-[10px] text-slate-400 mb-0.5 px-1 font-medium">
-            {{ msg.sender_id === currentUserId ? 'Anda' : (msg.sender_name || (chatStore.role === 'seller' ? 'Pembeli' : 'Penjual')) }}
+            {{ msg.sender_id === currentUserId ? 'Anda' : (msg.sender_name || (chatStore.role === 'seller' ? 'Pembeli' :
+              'Penjual')) }}
           </div>
-          <div
-            class="max-w-[82%] rounded-2xl px-3.5 py-2 text-xs shadow-xs"
-            :class="
-              msg.sender_id === currentUserId
-                ? 'bg-blue-600 text-white rounded-tr-none'
-                : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
-            "
-          >
+          <div class="max-w-[82%] rounded-2xl px-3.5 py-2 text-xs shadow-xs" :class="msg.sender_id === currentUserId
+            ? 'bg-blue-600 text-white rounded-tr-none'
+            : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
+            ">
             <p class="whitespace-pre-wrap break-words leading-relaxed">{{ msg.message }}</p>
-            <div
-              class="text-[9px] mt-1 text-right"
-              :class="msg.sender_id === currentUserId ? 'text-blue-100' : 'text-slate-400'"
-            >
+            <div class="text-[9px] mt-1 text-right"
+              :class="msg.sender_id === currentUserId ? 'text-blue-100' : 'text-slate-400'">
               {{ formatTime(msg.created_at) }}
             </div>
           </div>
@@ -350,46 +321,29 @@ onUnmounted(() => {
       </div>
 
       <!-- Quick Reply Suggestions Strip (Separated from Message History) -->
-      <div
-        v-if="!isLoading && !errorMessage"
-        class="px-3 pt-2 pb-1.5 bg-slate-50/90 border-t border-slate-200/70 flex flex-wrap gap-1.5 items-center shrink-0 max-w-full"
-      >
-        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+      <div v-if="!isLoading && !errorMessage"
+        class="px-3 pt-2 pb-1.5 bg-slate-50/90 border-t border-slate-200/70 flex flex-wrap gap-1.5 items-center shrink-0 max-w-full">
+        <span
+          class="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
           <i class="pi pi-bolt text-[10px] text-amber-500"></i>
           Saran:
         </span>
-        <button
-          v-for="(reply, idx) in quickReplies"
-          :key="idx"
-          type="button"
-          @click="sendQuickReply(reply)"
+        <button v-for="(reply, idx) in quickReplies" :key="idx" type="button" @click="sendQuickReply(reply)"
           :disabled="isSending"
-          class="text-[11px] font-medium leading-tight whitespace-nowrap px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 transition-colors shadow-2xs cursor-pointer disabled:opacity-50 inline-flex items-center"
-        >
+          class="text-[11px] font-medium leading-tight whitespace-nowrap px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-700 transition-colors shadow-2xs cursor-pointer disabled:opacity-50 inline-flex items-center">
           {{ reply }}
         </button>
       </div>
 
       <!-- Message Input Form Footer -->
-      <form
-        @submit.prevent="handleSendMessage"
-        class="p-2.5 sm:p-3 bg-white border-t border-slate-200 flex items-center gap-2 shrink-0"
-      >
-        <InputText
-          v-model="messageText"
-          placeholder="Tulis pesan Anda..."
+      <form @submit.prevent="handleSendMessage"
+        class="p-2.5 sm:p-3 bg-white border-t border-slate-200 flex items-center gap-2 shrink-0">
+        <InputText v-model="messageText" placeholder="Tulis pesan Anda..."
           class="flex-1 text-xs sm:text-sm py-2 px-3 rounded-xl border-slate-200 focus:border-blue-500 shadow-2xs"
-          :disabled="isSending"
-          @keydown.enter.prevent="handleSendMessage"
-        />
-        <Button
-          type="submit"
-          icon="pi pi-send"
-          label="Kirim"
-          :loading="isSending"
+          :disabled="isSending" @keydown.enter.prevent="handleSendMessage" />
+        <Button type="submit" icon="pi pi-send" label="Kirim" :loading="isSending"
           :disabled="!messageText.trim() || isSending"
-          class="bg-blue-600! border-blue-600! text-xs! sm:text-sm! py-2! px-3.5! rounded-xl! shadow-xs hover:bg-blue-700! font-medium!"
-        />
+          class="bg-blue-600! border-blue-600! text-xs! sm:text-sm! py-2! px-3.5! rounded-xl! shadow-xs hover:bg-blue-700! font-medium!" />
       </form>
     </div>
   </Dialog>
@@ -403,6 +357,7 @@ onUnmounted(() => {
   border: 0 !important;
   overflow: hidden !important;
 }
+
 :deep(.p-dialog.chat-dialog-modal .p-dialog-content) {
   padding: 0 !important;
   overflow: hidden !important;

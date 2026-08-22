@@ -50,23 +50,48 @@ class CheckoutController extends Controller
   public function __invoke(CheckoutRequest $request): JsonResponse
   {
     $user = $request->user();
-    $cart = Cart::where('buyer_id', $user->id)->with('items.product.shop')->firstOrFail();
+    $cart = Cart::query()
+      ->where('buyer_id', $user->id)
+      ->with('items.product.shop')
+      ->firstOrFail();
     $cartItems = $this->getValidatedCartItems($request, $cart);
 
-    // Validate stock availability
-    $stockCheck = $this->cartCalculationService->checkStockAvailability($cart);
-    if (!$stockCheck['available']) {
+    if ($cartItems->isEmpty()) {
+      return response()->json(['message' => 'No valid cart items selected for checkout.'], 422);
+    }
+
+    // Validate stock availability for selected items only
+    $unavailableItems = [];
+    foreach ($cartItems as $item) {
+      $product = $item->product;
+      if ($product->status !== \App\Enums\ProductStatus::APPROVED) {
+        continue;
+      }
+      if ($item->quantity > $product->stock) {
+        $unavailableItems[] = [
+          'id' => $item->id,
+          'product_id' => $item->product_id,
+          'product_name' => $product->name,
+          'requested' => $item->quantity,
+          'available_stock' => $product->stock,
+        ];
+      }
+    }
+
+    if (!empty($unavailableItems)) {
       return response()->json([
         'message' => 'Some items in your cart are out of stock or unavailable.',
-        'unavailable_items' => $stockCheck['unavailable_items'],
+        'unavailable_items' => $unavailableItems,
       ], 422);
     }
 
-    // Calculate totals
-    $subtotal = $this->cartCalculationService->calculateSubtotal($cart);
+    // Calculate totals from selected cart items
+    $subtotal = (float) $cartItems->sum(fn($item) => (float) $item->product->price * $item->quantity);
 
-    // Get cart weight for weight-based shipping calculation
-    $cartWeight = $this->cartCalculationService->calculateCartWeight($cart);
+    // Get selected items weight for weight-based shipping calculation
+    $cartWeight = (int) $cartItems->sum(function ($item) {
+      return ($item->product->weight ?? 0) * $item->quantity;
+    });
     $courierType = $request->input('courier_type', 'reguler');
     $calculatedCost = $this->cartCalculationService->calculateShippingCostWithWeight(
       $request->input('shipping_method'),
@@ -78,9 +103,9 @@ class CheckoutController extends Controller
       : ($request->filled('shipping_cost') ? (float) $request->input('shipping_cost') : $calculatedCost);
     $totalAmount = $subtotal + $shippingCost;
 
-    // Group items by shop (assuming single shop for now)
-    $groupedItems = $this->cartCalculationService->groupItemsByShop($cart);
-    $shop = $groupedItems[0]['shop_id'] ?? null;
+    // Group selected items by shop
+    $groupedItems = $cartItems->load('product.shop')->groupBy(fn($item) => $item->product->shop_id);
+    $shop = $groupedItems->keys()->first();
 
     if (!$shop) {
       return response()->json(['message' => 'No shop found for the cart items.'], 422);
@@ -94,9 +119,16 @@ class CheckoutController extends Controller
     $locationId = $request->input('location_id');
 
     if ($locationId) {
-      $location = CodLocation::where('user_id', $user->id)->findOrFail($locationId);
+      $location = CodLocation::query()
+        ->where('user_id', $user->id)
+        ->findOrFail($locationId);
       $shippingAddress = $location->address;
     }
+
+    // Determine order status: COD + COD = PENDING, otherwise AWAITING_VERIFICATION
+    $status = ($request->input('payment_method') === 'cod' && $request->input('shipping_method') === 'cod')
+      ? OrderStatus::PENDING
+      : OrderStatus::AWAITING_VERIFICATION;
 
     // Create order
     $order = Order::create([
@@ -109,7 +141,7 @@ class CheckoutController extends Controller
       'shipping_method' => $request->input('shipping_method'),
       'courier' => $request->input('courier'),
       'payment_method' => $request->input('payment_method'),
-      'status' => OrderStatus::AWAITING_VERIFICATION,
+      'status' => $status,
       'shipping_address' => $shippingAddress,
       'notes' => $request->input('notes'),
     ]);
@@ -127,8 +159,10 @@ class CheckoutController extends Controller
       'status' => PaymentStatus::PENDING,
     ]);
 
+    // Load relationships for response and notifications
+    $order->load(['buyer', 'shop', 'items.product', 'payment']);
+
     // Create notification for seller
-    $order->load(['shop.seller', 'items.product']);
     $sellerId = $order->shop?->seller_id;
     if ($sellerId) {
       $itemNames = $order->items->map(fn($item) => $item->product?->name)->filter()->take(2)->join(', ');
@@ -166,9 +200,6 @@ class CheckoutController extends Controller
       'is_read' => false,
     ]);
 
-    // Load relationships for the response
-    $order->load(['buyer', 'shop', 'items.product', 'payment']);
-
     return response()->json([
       'message' => 'Checkout successful.',
       'order' => new OrderResource($order),
@@ -180,8 +211,13 @@ class CheckoutController extends Controller
    */
   private function getValidatedCartItems(CheckoutRequest $request, Cart $cart): Collection
   {
-    $cartItemIds = $request->input('cart_items');
-    return CartItem::whereIn('id', $cartItemIds)->where('cart_id', $cart->id)->with('product')->get();
+    $cartItemIds = (array) $request->input('cart_items', []);
+    return CartItem::query()
+      /** @intelephense-ignore-line */
+      ->whereIn('id', $cartItemIds)
+      ->where('cart_id', $cart->id)
+      ->with('product')
+      ->get();
   }
 
   /**
@@ -209,8 +245,9 @@ class CheckoutController extends Controller
       ]);
 
       // Reduce product stock
-      $product = Product::find($cartItem->product_id);
-      $product->decrement('stock', $cartItem->quantity);
+      $product = Product::query()->find($cartItem->product_id);
+      $product->stock -= $cartItem->quantity;
+      $product->save();
     });
   }
 }

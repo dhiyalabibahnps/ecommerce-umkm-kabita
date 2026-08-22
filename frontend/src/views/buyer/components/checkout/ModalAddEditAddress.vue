@@ -115,7 +115,7 @@ const handleSave = async () => {
 
 <template>
   <Dialog :visible="visible" @update:visible="emit('update:visible', $event)" modal
-    :header="mode === 'add' ? 'Tambah Alamat COD' : 'Edit Alamat COD'" :style="{ width: '90%', maxWidth: '560px' }"
+    :header="mode === 'add' ? 'Tambah Alamat' : 'Edit Alamat'" :style="{ width: '90%', maxWidth: '560px' }"
     class="rounded-2xl">
     <div class="space-y-4 py-2">
       <div class="space-y-1">

@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\Buyer\PaymentController as BuyerPaymentController;
 use App\Http\Controllers\Api\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Api\Admin\ShopController as AdminShopController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Api\Buyer\CheckoutController;
+use App\Http\Controllers\Api\Buyer\PaymentSettingController;
 use App\Http\Controllers\Api\ShippingController;
 
 // API Version 1
@@ -100,13 +102,13 @@ Route::prefix('v1')->group(function () {
   });
 
   // Checkout Route (Buyer only)
-  Route::middleware(['auth:sanctum', 'buyer', 'throttle:api', 'sanitize'])->post('/checkout', \App\Http\Controllers\Api\Buyer\CheckoutController::class)->name('checkout.process');
+  Route::middleware(['auth:sanctum', 'buyer', 'throttle:api', 'sanitize'])->post('/checkout', CheckoutController::class)->name('checkout.process');
 
   // Payment Routes (Buyer only)
   Route::middleware(['auth:sanctum', 'buyer', 'throttle:api', 'sanitize'])->post('/payments/{payment}/upload', [BuyerPaymentController::class, 'upload'])->name('payments.upload');
 
   // Payment Settings Routes (Buyer only)
-  Route::middleware(['auth:sanctum', 'buyer', 'throttle:api', 'sanitize'])->get('/buyer/payment-settings', [\App\Http\Controllers\Api\Buyer\PaymentSettingController::class, 'show'])->name('payment-settings.show');
+  Route::middleware(['auth:sanctum', 'buyer', 'throttle:api', 'sanitize'])->get('/buyer/payment-settings', [PaymentSettingController::class, 'show'])->name('payment-settings.show');
 
   // Admin Routes
   Route::middleware(['auth:sanctum', 'admin', 'throttle:api', 'sanitize'])->group(function () {

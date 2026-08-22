@@ -22,9 +22,9 @@ const authStore = useAuthStore()
 
 // Data Menu Sidebar Dinamis
 const sidebarMenus = ref([
-  { label: 'Account', slug: 'account', icon: 'pi pi-user' },
-  { label: 'Orders', slug: 'orders', icon: 'pi pi-shopping-bag' },
-  { label: 'Address', slug: 'address', icon: 'pi pi-map-marker' },
+  { label: 'Akun', slug: 'account', icon: 'pi pi-user' },
+  { label: 'Pesanan', slug: 'orders', icon: 'pi pi-shopping-bag' },
+  { label: 'Alamat', slug: 'address', icon: 'pi pi-map-marker' },
 ])
 
 // Slug aktif dari props/route

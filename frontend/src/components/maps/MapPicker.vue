@@ -306,26 +306,26 @@ onBeforeUnmount(() => {
 
     <!-- Search -->
     <div class="flex gap-2 mb-3">
-      <InputText v-model="searchQuery" class="w-full" placeholder="Cari alamat..." :disabled="disabled"
+      <InputText v-model="searchQuery" class="w-full text-xs!" placeholder="Cari alamat..." :disabled="disabled"
         @input="handleSearchInput" @keyup.enter="performSearch" />
 
-      <Button icon="pi pi-search" :loading="loadingSearch" :disabled="disabled ||
+      <Button icon="pi pi-search text-xs!" :loading="loadingSearch" :disabled="disabled ||
         searchQuery.trim().length < 3
         " @click="performSearch" />
 
-      <Button v-if="modelValue" icon="pi pi-times" severity="secondary" outlined :disabled="disabled"
-        @click="clearLocation" />
+      <Button v-if="modelValue" icon="pi pi-times" class="p-0! m-0! text-xs!" iconClass="p-0! m-0!" severity="secondary"
+        outlined :disabled="disabled" @click="clearLocation" />
     </div>
 
     <!-- Search result -->
     <div v-if="searchResults.length" class="border border-surface-200 rounded-lg mb-3 overflow-hidden">
       <button v-for="result in searchResults" :key="result.place_id" type="button"
-        class="w-full text-left p-3 hover:bg-surface-100 border-b last:border-b-0 border-surface-200"
+        class="w-full text-left p-3 hover:bg-surface-100 border-b last:border-b-0 border-surface-200 text-xs!"
         @click="selectSearchResult(result)">
         <div class="flex gap-2">
           <i class="pi pi-map-marker mt-1" />
 
-          <span class="text-sm">
+          <span class="text-xs!">
             {{ result.display_name }}
           </span>
         </div>
@@ -342,7 +342,7 @@ onBeforeUnmount(() => {
       :style="{ height }" />
 
     <!-- Loading reverse geocode -->
-    <div v-if="loadingReverse" class="flex items-center gap-2 mt-3 text-sm text-surface-500">
+    <div v-if="loadingReverse" class="flex items-center gap-2 mt-3 text-xs! text-surface-500">
       <ProgressSpinner style="width: 18px; height: 18px" strokeWidth="4" />
 
       Mencari alamat...
@@ -353,7 +353,7 @@ onBeforeUnmount(() => {
       <div class="flex gap-2">
         <i class="pi pi-map-marker mt-1" />
 
-        <div class="text-sm">
+        <div class="text-xs!">
           <div class="font-medium mb-1">
             Lokasi terpilih
           </div>

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Seller;
 
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Seller\IndexOrderRequest;
 use App\Http\Requests\Seller\PackOrderRequest;
 use App\Http\Requests\Seller\ProcessOrderRequest;
@@ -34,9 +35,8 @@ class OrderController extends Controller
    */
   public function index(IndexOrderRequest $request): JsonResponse
   {
-    $query = Order::whereHas('shop', function ($query) {
-      $query->where('seller_id', auth()->id());
-    })->with(['items', 'shop', 'payment', 'buyer']);
+    $sellerId = Auth::id(); // @intelephense-ignore
+    $query = Order::forSeller($sellerId)->with(['items', 'shop', 'payment', 'buyer']);
 
     // Filter by status
     if ($request->filled('status')) {
@@ -84,7 +84,8 @@ class OrderController extends Controller
    */
   public function show(Order $order): JsonResponse
   {
-    if ($order->shop->seller_id !== auth()->id()) {
+    $sellerId = Auth::id(); // @intelephense-ignore
+    if ($order->shop->seller_id !== $sellerId) {
       return response()->json([
         'success' => false,
         'message' => 'Akses ditolak. Order ini bukan milik toko Anda.',
@@ -109,7 +110,8 @@ class OrderController extends Controller
    */
   public function process(ProcessOrderRequest $request, Order $order): JsonResponse
   {
-    if ($order->shop->seller_id !== auth()->id()) {
+    $sellerId = Auth::id(); // @intelephense-ignore
+    if ($order->shop->seller_id !== $sellerId) {
       return response()->json([
         'success' => false,
         'message' => 'Akses ditolak. Order ini bukan milik toko Anda.',
@@ -119,11 +121,11 @@ class OrderController extends Controller
     if ($order->status !== OrderStatus::PROCESSING) {
       return response()->json([
         'success' => false,
-        'message' => 'Hanya order dengan status dikonfirmasi yang dapat diproses.',
+        'message' => 'Hanya order dengan status processing yang dapat dikemas.',
       ], 422);
     }
 
-    $order->update(['status' => OrderStatus::PACKED]);
+    $order->update(['status' => OrderStatus::PACKED->value]);
 
     return response()->json([
       'success' => true,
@@ -142,7 +144,8 @@ class OrderController extends Controller
    */
   public function pack(PackOrderRequest $request, Order $order): JsonResponse
   {
-    if ($order->shop->seller_id !== auth()->id()) {
+    $sellerId = Auth::id(); // @intelephense-ignore
+    if ($order->shop->seller_id !== $sellerId) {
       return response()->json([
         'success' => false,
         'message' => 'Akses ditolak. Order ini bukan milik toko Anda.',
@@ -156,7 +159,7 @@ class OrderController extends Controller
       ], 422);
     }
 
-    $order->update(['status' => OrderStatus::PACKED]);
+    $order->update(['status' => OrderStatus::PACKED->value]);
 
     if ($order->buyer_id) {
       Notification::create([
@@ -193,7 +196,8 @@ class OrderController extends Controller
    */
   public function ship(ShipOrderRequest $request, Order $order): JsonResponse
   {
-    if ($order->shop->seller_id !== auth()->id()) {
+    $sellerId = Auth::id(); // @intelephense-ignore
+    if ($order->shop->seller_id !== $sellerId) {
       return response()->json([
         'success' => false,
         'message' => 'Akses ditolak. Order ini bukan milik toko Anda.',
@@ -218,7 +222,7 @@ class OrderController extends Controller
     $trackingNum = $request->input('tracking_number');
 
     $order->update([
-      'status' => OrderStatus::SHIPPED,
+      'status' => OrderStatus::SHIPPED->value,
       'tracking_number' => $trackingNum,
       'courier' => $courierName,
     ]);
@@ -258,7 +262,8 @@ class OrderController extends Controller
    */
   public function codComplete(Order $order): JsonResponse
   {
-    if ($order->shop->seller_id !== auth()->id()) {
+    $sellerId = Auth::id(); // @intelephense-ignore
+    if ($order->shop->seller_id !== $sellerId) {
       return response()->json([
         'success' => false,
         'message' => 'Akses ditolak. Order ini bukan milik toko Anda.',
@@ -272,7 +277,7 @@ class OrderController extends Controller
       ], 422);
     }
 
-    $order->update(['status' => OrderStatus::COMPLETED]);
+    $order->update(['status' => OrderStatus::COMPLETED->value]);
 
     return response()->json([
       'success' => true,
