@@ -37,6 +37,8 @@ export interface UpdateProfileRequest {
   phone: string;
   address?: string | null;
   email: string;
+  gender?: 'male' | 'female' | null;
+  date_of_birth?: string | null;
   photo?: File | null;
 }
 

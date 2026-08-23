@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '@/services/apiError'
+import { categoryService } from '@/services/categoryService'
+import { sellerProductService } from '@/services/sellerProductService'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
@@ -11,9 +14,6 @@ import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { categoryService } from '@/services/categoryService'
-import { sellerProductService } from '@/services/sellerProductService'
-import { getApiErrorMessage } from '@/services/apiError'
 
 const route = useRoute()
 const router = useRouter()
@@ -53,7 +53,7 @@ const fetchProductDetail = async () => {
   isLoadingGet.value = true
   try {
     const [product, categoryResponse] = await Promise.all([sellerProductService.getDetail(productSlug), categoryService.list()])
-    form.value = { id: product.id, name: product.name, category_id: product.category_id, price: Number(product.price), cost_price: product.cost_price === null ? null : Number(product.cost_price), stock: product.stock, weight: product.weight, description: product.description || '', sku: '', status: product.status === 'approved' ? 'active' : 'inactive', images: product.images?.map((image) => image.url || '') || [] }
+    form.value = { id: product.id, name: product.name, category_id: product.category?.id ?? null, price: Number(product.price), cost_price: product.cost_price === null ? null : Number(product.cost_price), stock: product.stock, weight: product.weight, description: product.description || '', sku: product.sku || '', status: product.status === 'approved' ? 'active' : 'inactive', images: product.images?.map((image) => image.url || '') || [] }
     imageIds.value = product.images?.map((image) => image.id) || []
     categories.value = categoryResponse.map((category) => ({ label: category.name, value: category.id }))
   } catch (error) { toast.add({ severity: 'error', summary: 'Produk gagal dimuat', detail: getApiErrorMessage(error), life: 3500 }); router.push('/seller/produk') }
@@ -84,6 +84,7 @@ const handleUpdate = async () => {
     payload.append('price', String(form.value.price))
     payload.append('stock', String(form.value.stock))
     payload.append('description', form.value.description)
+    payload.append('sku', form.value.sku)
     if (form.value.cost_price !== null) payload.append('cost_price', String(form.value.cost_price))
     if (form.value.weight !== null) payload.append('weight', String(form.value.weight))
     imageFiles.value.forEach((file) => payload.append('images[]', file))
@@ -152,10 +153,10 @@ onMounted(() => {
           </div>
         </div>
 
-        <a href="#" target="_blank" class="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1">
+        <!-- <a href="#" target="_blank" class="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1">
           <span>Lihat di Toko</span>
           <i class="pi pi-external-link text-[10px]"></i>
-        </a>
+        </a> -->
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -168,6 +169,11 @@ onMounted(() => {
                 Nama Produk <span class="text-red-500">*</span>
               </label>
               <InputText v-model="form.name" class="w-full! rounded-xl! text-xs! py-2.5!" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">SKU</label>
+              <InputText v-model="form.sku" class="w-full! rounded-xl! text-xs! py-2.5!" />
             </div>
 
             <div>

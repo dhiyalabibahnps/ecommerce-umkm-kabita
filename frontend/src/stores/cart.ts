@@ -35,6 +35,7 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   async function loadCart() {
+    if (!localStorage.getItem('token')) return
     initialLoading.value = true
     error.value = null
     try {

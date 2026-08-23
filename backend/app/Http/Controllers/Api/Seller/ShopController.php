@@ -140,7 +140,7 @@ class ShopController extends Controller
    */
   public function showPublic(string $slug): JsonResponse
   {
-    $shop = Shop::where('slug', $slug)
+    $shop = Shop::query()->where('slug', $slug)
       ->with(['products' => function ($q) {
         $q->where('status', 'approved');
       }])

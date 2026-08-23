@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Enums\UserGender;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,6 +21,8 @@ class UpdateBuyerProfileRequest extends FormRequest
       'name' => ['required', 'string', 'max:255'],
       'phone' => ['required', 'string', 'max:20'],
       'address' => ['nullable', 'string', 'max:500'],
+      'gender' => ['nullable', 'in:' . UserGender::MALE->value . ',' . UserGender::FEMALE->value],
+      'date_of_birth' => ['nullable', 'date', 'before:today'],
       'photo' => ['nullable', 'image', 'max:2048'],
       'email' => [
         'required',
@@ -41,6 +44,9 @@ class UpdateBuyerProfileRequest extends FormRequest
       'phone.max' => 'Nomor telepon maksimal 20 karakter.',
       'address.string' => 'Alamat harus berupa teks.',
       'address.max' => 'Alamat maksimal 500 karakter.',
+      'gender.in' => 'Jenis kelamin tidak valid.',
+      'date_of_birth.date' => 'Format tanggal lahir tidak valid.',
+      'date_of_birth.before' => 'Tanggal lahir tidak boleh di masa depan.',
       'photo.image' => 'File foto harus berupa gambar.',
       'photo.max' => 'Ukuran foto maksimal 2MB.',
       'email.required' => 'Email wajib diisi.',
@@ -55,6 +61,8 @@ class UpdateBuyerProfileRequest extends FormRequest
       'name' => ['description' => 'Nama lengkap pembeli.'],
       'phone' => ['description' => 'Nomor telepon pembeli.'],
       'address' => ['description' => 'Alamat pembeli.'],
+      'gender' => ['description' => 'Jenis kelamin pembeli: male atau female.'],
+      'date_of_birth' => ['description' => 'Tanggal lahir pembeli (YYYY-MM-DD).'],
       'photo' => ['description' => 'Foto profil pembeli (image).'],
       'email' => ['description' => 'Email pembeli.'],
     ];

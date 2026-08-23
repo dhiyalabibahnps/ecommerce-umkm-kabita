@@ -16,6 +16,8 @@ class UserResource extends JsonResource
             'role' => $this->role,
             'phone' => $this->phone,
             'address' => $this->address,
+            'gender' => $this->gender,
+            'date_of_birth' => $this->date_of_birth,
             'photo' => $this->photo ? url('storage/' . $this->photo) : null,
             'status' => $this->status,
             'email_verified_at' => $this->email_verified_at?->toDateTimeString(),

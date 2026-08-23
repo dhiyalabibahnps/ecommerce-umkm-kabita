@@ -4,6 +4,7 @@ import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
+import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref } from 'vue'
 
@@ -15,11 +16,20 @@ const errorMessage = ref('')
 const isSaving = ref(false)
 const saveError = ref('')
 
-const form = ref({
+const form = ref<{
+  name: string
+  email: string
+  phone: string
+  // address: string
+  gender: 'male' | 'female' | ''
+  dateOfBirth: string
+}>({
   name: '',
   email: '',
   phone: '',
-  address: '',
+  // address: '',
+  gender: '',
+  dateOfBirth: '',
 })
 
 const photoPreview = ref<string | null>(null)
@@ -27,12 +37,20 @@ const photoFile = ref<File | null>(null)
 const fileName = ref('')
 const profilePhotoInput = ref<HTMLInputElement | null>(null)
 
+const genderOptions = [
+  { label: 'Pilih jenis kelamin', value: '' },
+  { label: 'Laki-laki', value: 'male' },
+  { label: 'Perempuan', value: 'female' },
+]
+
 const isFormValid = computed(() => {
   return (
     form.value.name.trim().length > 0 &&
     form.value.email.trim().length > 0 &&
     form.value.phone.trim().length > 0 &&
-    form.value.address.trim().length > 0
+    // form.value.address.trim().length > 0 &&
+    form.value.gender.trim().length > 0 &&
+    form.value.dateOfBirth.trim().length > 0
   )
 })
 
@@ -137,8 +155,10 @@ async function submit() {
     const formData = new FormData()
     formData.append('name', form.value.name.trim())
     formData.append('phone', form.value.phone.trim())
-    formData.append('address', form.value.address.trim())
+    // formData.append('address', form.value.address.trim())
     formData.append('email', form.value.email.trim())
+    formData.append('gender', form.value.gender)
+    formData.append('date_of_birth', form.value.dateOfBirth)
 
     if (photoFile.value) {
       formData.append('photo', photoFile.value)
@@ -147,8 +167,10 @@ async function submit() {
     const response = await authStore.updateProfile({
       name: form.value.name.trim(),
       phone: form.value.phone.trim(),
-      address: form.value.address.trim(),
+      // address: form.value.address.trim(),
       email: form.value.email.trim(),
+      gender: form.value.gender ? (form.value.gender as 'male' | 'female') : null,
+      date_of_birth: form.value.dateOfBirth || null,
       photo: photoFile.value,
     })
 
@@ -199,7 +221,9 @@ onMounted(async () => {
       form.value.name = user.name
       form.value.email = user.email
       form.value.phone = user.phone || ''
-      form.value.address = user.address || ''
+      // form.value.address = user.address || ''
+      form.value.gender = user.gender || ''
+      form.value.dateOfBirth = user.date_of_birth || ''
       photoPreview.value = user.photo || null
     }
   } catch (error) {
@@ -260,11 +284,30 @@ onMounted(async () => {
         </div>
 
         <!-- Alamat -->
-        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+        <!-- <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <label class="w-full sm:w-32 text-xs font-medium text-slate-500">Alamat <span
               class="text-rose-500">*</span></label>
           <div class="flex-1">
             <InputText v-model="form.address" class="w-full text-sm!" placeholder="Alamat" />
+          </div>
+        </div> -->
+
+        <!-- Jenis Kelamin -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <label class="w-full sm:w-32 text-xs font-medium text-slate-500">Jenis Kelamin <span
+              class="text-rose-500">*</span></label>
+          <div class="flex-1">
+            <Select v-model="form.gender" :options="genderOptions" option-label="label" option-value="value"
+              class="w-full" placeholder="Pilih jenis kelamin" />
+          </div>
+        </div>
+
+        <!-- Tanggal Lahir -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <label class="w-full sm:w-32 text-xs font-medium text-slate-500">Tanggal Lahir <span
+              class="text-rose-500">*</span></label>
+          <div class="flex-1">
+            <InputText v-model="form.dateOfBirth" type="date" class="w-full text-sm!" />
           </div>
         </div>
 

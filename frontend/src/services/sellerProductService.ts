@@ -1,5 +1,5 @@
-import type { PaginationMeta, Product } from '../types'
-import apiClient from './apiClient'
+import type { PaginationMeta, Product } from '../types';
+import apiClient from './apiClient';
 
 export const sellerProductService = {
   async list(filters?: Record<string, string | number>): Promise<{ data: Product[]; meta: PaginationMeta }> {
@@ -17,7 +17,7 @@ export const sellerProductService = {
   async update(slug: string, data: Record<string, unknown> | FormData): Promise<Product> {
     const payload = data instanceof FormData ? data : { ...data, _method: 'PUT' }
     if (data instanceof FormData) data.append('_method', 'PUT')
-    const response = await apiClient.post(`/seller/products/${slug}`, payload, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined)
+    const response = await apiClient.put(`/seller/products/${slug}`, payload, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined)
     return response.data.data
   },
   async remove(slug: string): Promise<void> { await apiClient.delete(`/seller/products/${slug}`) },

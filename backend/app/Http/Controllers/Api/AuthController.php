@@ -289,7 +289,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        $data = $request->only(['name', 'phone', 'address', 'email']);
+        $data = $request->only(['name', 'phone', 'email', 'gender', 'date_of_birth']);
 
         if ($request->hasFile('photo')) {
             if ($user->photo && Storage::disk('public')->exists($user->photo)) {

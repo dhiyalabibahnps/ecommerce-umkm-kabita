@@ -31,7 +31,7 @@ class ProductController extends Controller
    */
   public function pending(Request $request): JsonResponse
   {
-    $query = Product::where('status', 'pending')
+    $query = Product::query()->where('status', 'pending')
       ->with(['shop.seller', 'category', 'images']);
 
     // Filter by shop_id

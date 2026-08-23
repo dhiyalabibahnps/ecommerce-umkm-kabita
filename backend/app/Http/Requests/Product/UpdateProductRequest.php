@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Product;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\UserRole;
+use App\Models\Product;
 use Illuminate\Support\Str;
 
 class UpdateProductRequest extends FormRequest
@@ -24,6 +24,7 @@ class UpdateProductRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'string', 'max:255'],
+            'sku' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'price' => ['sometimes', 'numeric', 'gt:cost_price', 'min:0'],
             'cost_price' => ['nullable', 'numeric', 'min:0'],
@@ -41,6 +42,7 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name' => ['description' => 'Nama produk (opsional).'],
+            'sku' => ['description' => 'SKU produk (opsional).'],
             'description' => ['description' => 'Deskripsi produk (opsional).'],
             'price' => ['description' => 'Harga jual produk (opsional).'],
             'cost_price' => ['description' => 'Harga modal produk (opsional).'],
@@ -56,10 +58,10 @@ class UpdateProductRequest extends FormRequest
     {
         $validator->after(function ($v) {
             if ($this->has('name')) {
-                $product = $this->route('product');
-                $productId = is_object($product) ? $product->id : optional(\App\Models\Product::where('slug', $product)->first())->id;
+                $product = $this->route('slug');
+                $productId = is_object($product) ? $product->id : Product::query()->where('slug', '=', $product)->value('id');
                 $slug = Str::slug($this->name);
-                if (\App\Models\Product::where('slug', 'like', $slug . '%')->where('id', '!=', $productId)->exists()) {
+                if (Product::query()->where('slug', 'like', $slug . '%')->where('id', '!=', $productId)->exists()) {
                     $v->errors()->add('name', 'Nama produk sudah digunakan.');
                 }
             }

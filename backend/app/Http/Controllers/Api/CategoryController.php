@@ -48,7 +48,7 @@ class CategoryController extends Controller
   public function show(string $slug): JsonResponse
   {
     $category = Cache::remember("category_public_v2_{$slug}", 300, function () use ($slug) {
-      return Category::where('slug', $slug)->with(['products' => function ($query) {
+      return Category::query()->where('slug', $slug)->with(['products' => function ($query) {
         $query->where('status', 'approved')->with(['shop', 'category', 'images']);
       }])->first();
     });
@@ -140,7 +140,7 @@ class CategoryController extends Controller
     }
 
     $slug = $category->slug;
-    $category->delete();
+    $category->delete([]);
     Cache::forget('categories_all');
     Cache::forget("category_{$slug}");
 

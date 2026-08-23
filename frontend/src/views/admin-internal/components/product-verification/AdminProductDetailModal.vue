@@ -93,7 +93,7 @@ const formatRupiah = (val: string | number) => {
               <img :src="product.shop?.logo || 'https://via.placeholder.com/150'"
                 class="w-12 h-12 rounded-xl object-cover border border-slate-200" />
               <div>
-                <h4 class="font-bold text-slate-800 text-base leading-tight">{{ product.shop?.name || 'Toko Kabita' }}
+                <h4 class="font-bold text-slate-800 text-base leading-tight">{{ product.shop?.name || 'Nama Toko' }}
                 </h4>
                 <p class="text-xs text-slate-500 mt-1 flex items-center gap-1">
                   <i class="pi pi-user text-[10px]"></i>

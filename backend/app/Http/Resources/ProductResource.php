@@ -13,6 +13,7 @@ class ProductResource extends JsonResource
       'id' => $this->id,
       'name' => $this->name,
       'slug' => $this->slug,
+      'sku' => $this->sku,
       'description' => $this->description,
       'price' => $this->price,
       'cost_price' => $this->cost_price,
@@ -25,11 +26,14 @@ class ProductResource extends JsonResource
         'id' => $this->shop?->id,
         'name' => $this->shop?->name,
         'slug' => $this->shop?->slug,
-        'seller' => $this->when($request->routeIs('admin.*'), [
-          'id' => $this->shop?->seller?->id,
-          'name' => $this->shop?->seller?->name,
-          'email' => $this->shop?->seller?->email,
-        ]),
+        'logo' => $this->shop->logo ? (str_starts_with($this->shop->logo, 'http://') || str_starts_with($this->shop->logo, 'https://') ? $this->shop->logo : asset('storage/' . $this->shop->logo)) : null,
+        'banner' => $this->shop->banner ? (str_starts_with($this->shop->banner, 'http://') || str_starts_with($this->shop->banner, 'https://') ? $this->shop->banner : asset('storage/' . $this->shop->banner)) : null,
+        'seller' => $this->shop->relationLoaded('seller') ? [
+          'id' => $this->shop->seller?->id,
+          'name' => $this->shop->seller?->name,
+          'email' => $this->shop->seller?->email,
+          'phone' => $this->shop->seller?->phone,
+        ] : null,
       ]),
       'category' => $this->whenLoaded('category', fn() => [
         'id' => $this->category?->id,

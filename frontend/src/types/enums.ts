@@ -9,6 +9,9 @@ export type UserRole = 'admin' | 'seller' | 'buyer';
 /** From App\Enums\UserStatus */
 export type UserStatus = 'active' | 'inactive' | 'suspended';
 
+/** From App\Enums\UserGender */
+export type UserGender = 'male' | 'female';
+
 /** From App\Enums\ProductStatus */
 export type ProductStatus = 'pending' | 'approved' | 'rejected' | 'active';
 

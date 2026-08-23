@@ -34,6 +34,7 @@ class Product extends Model
     'weight',
     'verified_at',
     'rejection_reason',
+    'sku',
   ];
 
   protected function casts(): array

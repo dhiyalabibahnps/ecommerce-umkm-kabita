@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Enums\UserGender;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -39,6 +40,8 @@ class User extends Authenticatable
         'phone',     // Tambahan: nomor WhatsApp
         'address',   // Tambahan: alamat user
         'photo',     // Tambahan: foto profil
+        'gender',    // Tambahan: jenis kelamin
+        'date_of_birth', // Tambahan: tanggal lahir
         'status',    // Tambahan: active, inactive, suspended
         'proof_image',
         'verified_by',
@@ -69,6 +72,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => UserRole::class,
             'status' => UserStatus::class,
+            'gender' => UserGender::class,
         ];
     }
 

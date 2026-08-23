@@ -8,6 +8,7 @@ import type {
   PaymentStatus,
   ProductStatus,
   ShopStatus,
+  UserGender,
   UserRole,
   UserStatus,
 } from './enums';
@@ -24,6 +25,8 @@ export interface User {
   role: UserRole;
   phone: string | null;
   address: string | null;
+  gender: UserGender | null;
+  date_of_birth: string | null;
   status: UserStatus;
   proof_image: string | null;
   photo: string | null;
@@ -90,6 +93,7 @@ export interface Product {
   category_id: number;
   name: string;
   slug: string;
+  sku: string | null;
   description: string | null;
   price: number;
   cost_price: number | null;

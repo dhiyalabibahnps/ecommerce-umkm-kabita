@@ -40,11 +40,17 @@ class ProductController extends Controller
         if ($request->filled('category_id')) $query->where('category_id', $request->integer('category_id'));
         if ($request->filled('status') && $request->input('status') !== 'all') $query->where('status', $request->input('status'));
         match ($request->input('sort', 'newest')) {
-            'oldest' => $query->oldest(), 'price_asc' => $query->orderBy('price'), 'price_desc' => $query->orderByDesc('price'), default => $query->latest(),
+            'oldest' => $query->oldest(),
+            'price_asc' => $query->orderBy('price'),
+            'price_desc' => $query->orderByDesc('price'),
+            default => $query->latest(),
         };
         $products = $query->paginate(min((int) $request->input('per_page', 15), 100));
         return response()->json(['success' => true, 'data' => ProductResource::collection($products), 'meta' => [
-            'current_page' => $products->currentPage(), 'per_page' => $products->perPage(), 'total' => $products->total(), 'last_page' => $products->lastPage(),
+            'current_page' => $products->currentPage(),
+            'per_page' => $products->perPage(),
+            'total' => $products->total(),
+            'last_page' => $products->lastPage(),
         ]]);
     }
 
@@ -116,7 +122,10 @@ class ProductController extends Controller
         $product->update($data);
         foreach ($request->input('delete_images', []) as $imageId) {
             $image = $product->images()->whereKey($imageId)->first();
-            if ($image) { Storage::disk('public')->delete($image->image_path); $image->delete(); }
+            if ($image) {
+                Storage::disk('public')->delete($image->image_path);
+                $image->delete();
+            }
         }
         $this->storeImages($product, $request);
         return response()->json(['success' => true, 'message' => 'Produk berhasil diperbarui.', 'data' => new ProductResource($product->load(['category', 'images']))]);
@@ -135,7 +144,7 @@ class ProductController extends Controller
         $product = $this->ownedProduct($slug);
         if (!$product) return response()->json(['success' => false, 'message' => 'Produk tidak ditemukan.'], 404);
         if ($product->hasActiveOrders()) return response()->json(['success' => false, 'message' => 'Produk tidak dapat dihapus karena memiliki pesanan aktif.'], 409);
-        $product->delete();
+        $product->delete([]);
         return response()->json(['success' => true, 'message' => 'Produk berhasil dihapus.']);
     }
 
