@@ -32,6 +32,16 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->environment('production')) {
+            $this->command?->info('Production environment detected. Seeding production users only.');
+
+            $this->call(KabitaProductionUsersSeeder::class);
+
+            $this->command?->info('Production users seeded successfully.');
+
+            return;
+        }
+
         $this->clearDemoData();
 
         $password = Hash::make('password');
@@ -82,7 +92,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Fashion', 'slug' => 'fashion'],
             ['name' => 'Kerajinan', 'slug' => 'kerajinan'],
             ['name' => 'Kecantikan', 'slug' => 'kecantikan'],
-        ])->mapWithKeys(fn (array $data) => [$data['slug'] => Category::create($data)]);
+        ])->mapWithKeys(fn(array $data) => [$data['slug'] => Category::create($data)]);
 
         $verifiedShop = Shop::create([
             'seller_id' => $verifiedSeller->id,
@@ -116,7 +126,7 @@ class DatabaseSeeder extends Seeder
         });
 
         $approvedProducts = $products->filter(
-            fn (Product $product): bool => $product->status === ProductStatus::APPROVED
+            fn(Product $product): bool => $product->status === ProductStatus::APPROVED
         )->values();
         $cart = Cart::create(['buyer_id' => $buyer->id]);
         CartItem::create(['cart_id' => $cart->id, 'product_id' => $approvedProducts[0]->id, 'quantity' => 1]);
@@ -202,10 +212,22 @@ class DatabaseSeeder extends Seeder
     private function clearDemoData(): void
     {
         Schema::disableForeignKeyConstraints();
-        foreach ([
-            'daily_product_sales', 'payments', 'order_items', 'orders', 'cart_items', 'carts',
-            'cod_locations', 'payment_settings', 'products', 'shops', 'categories', 'users',
-        ] as $table) {
+        foreach (
+            [
+                'daily_product_sales',
+                'payments',
+                'order_items',
+                'orders',
+                'cart_items',
+                'carts',
+                'cod_locations',
+                'payment_settings',
+                'products',
+                'shops',
+                'categories',
+                'users',
+            ] as $table
+        ) {
             DB::table($table)->delete();
         }
         Schema::enableForeignKeyConstraints();
