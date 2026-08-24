@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { getApiErrorMessage } from '@/services/apiError'
-import { adminProductService } from '@/services/adminProductService'
 import { adminPaymentService } from '@/services/adminPaymentService'
+import { adminProductService } from '@/services/adminProductService'
+import { getApiErrorMessage } from '@/services/apiError'
 import type { Payment, Product } from '@/types/entities'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
@@ -187,7 +187,8 @@ onMounted(() => {
       </button>
     </div>
 
-    <div v-if="verificationTab === 'payments'" class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+    <div v-if="verificationTab === 'payments'"
+      class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       <div class="border-b border-slate-100 p-5">
         <h2 class="font-bold text-slate-800">Pembayaran Menunggu Verifikasi</h2>
         <p class="mt-1 text-xs text-slate-500">Pastikan bukti transfer sesuai sebelum pesanan diproses seller.</p>
@@ -195,16 +196,25 @@ onMounted(() => {
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-50 text-xs uppercase text-slate-500">
-            <tr><th class="px-5 py-3">Pesanan</th><th class="px-4 py-3">Buyer</th><th class="px-4 py-3">Toko</th><th class="px-4 py-3">Nominal</th><th class="px-4 py-3">Bukti</th><th class="px-5 py-3 text-right">Aksi</th></tr>
+            <tr>
+              <th class="px-5 py-3">Pesanan</th>
+              <th class="px-4 py-3">Buyer</th>
+              <th class="px-4 py-3">Toko</th>
+              <th class="px-4 py-3">Nominal</th>
+              <th class="px-4 py-3">Bukti</th>
+              <th class="px-5 py-3 text-right">Aksi</th>
+            </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-for="payment in payments" :key="payment.id" class="hover:bg-slate-50/70">
-              <td class="px-5 py-4 font-semibold text-slate-800">{{ payment.order?.order_number || `Order #${payment.order_id}` }}</td>
+              <td class="px-5 py-4 font-semibold text-slate-800">{{ payment.order?.order_number || `Order
+                #${payment.order_id}` }}</td>
               <td class="px-4 py-4 text-slate-600">{{ payment.order?.buyer?.name || '—' }}</td>
               <td class="px-4 py-4 text-slate-600">{{ payment.order?.shop?.name || '—' }}</td>
               <td class="px-4 py-4 font-semibold text-blue-600">{{ formatCurrency(payment.amount) }}</td>
               <td class="px-4 py-4">
-                <Button v-if="payment.proof_image" label="Lihat bukti" icon="pi pi-image" text size="small" @click="selectedProof = payment.proof_image; proofDialogVisible = true" />
+                <Button v-if="payment.proof_image" label="Lihat bukti" icon="pi pi-image" text size="small"
+                  @click="selectedProof = payment.proof_image; proofDialogVisible = true" />
                 <span v-else class="text-xs text-slate-400">Belum ada</span>
               </td>
               <td class="px-5 py-4 text-right">
@@ -214,7 +224,10 @@ onMounted(() => {
                 </div>
               </td>
             </tr>
-            <tr v-if="!payments.length"><td colspan="6" class="px-5 py-12 text-center text-sm text-slate-400">Tidak ada pembayaran yang menunggu verifikasi.</td></tr>
+            <tr v-if="!payments.length">
+              <td colspan="6" class="px-5 py-12 text-center text-sm text-slate-400">Tidak ada pembayaran yang menunggu
+                verifikasi.</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -223,18 +236,21 @@ onMounted(() => {
     <div v-if="verificationTab === 'products'">
       <AdminProductFilter v-model:activeTab="activeTab" :pendingCount="pendingCount" />
 
-      <AdminProductTable :products="filteredProducts" @viewDetail="openDetail" @approve="openApprove" @reject="openReject" />
+      <AdminProductTable :products="filteredProducts" @viewDetail="openDetail" @approve="openApprove"
+        @reject="openReject" />
     </div>
 
     <AdminProductDetailModal v-model:visible="showDetailModal" :product="selectedProduct"
       @approve="openApprove(selectedProduct!)" @reject="openReject(selectedProduct!)" />
 
-    <AdminProductApproveModal v-model:visible="showApproveModal" :product="selectedProduct" :loading="isSubmitting" @confirm="executeApprove" />
+    <AdminProductApproveModal v-model:visible="showApproveModal" :product="selectedProduct" :loading="isSubmitting"
+      @confirm="executeApprove" />
 
     <AdminProductRejectModal v-model:visible="showRejectModal" :product="selectedProduct" @confirm="executeReject" />
 
     <Dialog v-model:visible="proofDialogVisible" modal header="Bukti Pembayaran" :style="{ width: 'min(560px, 92vw)' }">
-      <img v-if="selectedProof" :src="selectedProof" alt="Bukti pembayaran" class="max-h-[70vh] w-full rounded-xl object-contain" />
+      <img v-if="selectedProof" :src="selectedProof" alt="Bukti pembayaran"
+        class="max-h-[70vh] w-full rounded-xl object-contain" />
     </Dialog>
   </div>
 </template>

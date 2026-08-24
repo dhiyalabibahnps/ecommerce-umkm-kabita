@@ -87,7 +87,7 @@ async function handleVerify() {
         detail: 'Email Anda berhasil diverifikasi.',
         life: 3000,
       });
-      
+
       // Redirect ke login setelah verifikasi berhasil
       // setTimeout(() => {
       //   router.push('/login');
@@ -240,14 +240,25 @@ onUnmounted(() => {
               Email Berhasil Diverifikasi
             </p>
             <p class="text-sm text-black">
-              Akun Anda telah aktif. Sekarang Anda dapat mulai
-              menjelajahi produk UMKM terbaik di Kabita.
+              <template v-if="authStore.userRole === 'seller'">
+                Akun seller Anda telah aktif. Sekarang Anda dapat mulai
+                mengelola toko dan menambahkan produk UMKM di Kabita.
+              </template>
+              <template v-else>
+                Akun Anda telah aktif. Sekarang Anda dapat mulai
+                menjelajahi produk UMKM terbaik di Kabita.
+              </template>
             </p>
           </div>
           <Button type="button"
             class="ml-1 font-semibold text-primary-600 transition hover:text-primary-500 disabled:opacity-50 w-full"
             fluid @click="handleStartShopping">
-            Mulai Belanja
+            <template v-if="authStore.userRole === 'seller'">
+              Masuk ke Dashboard Seller
+            </template>
+            <template v-else>
+              Mulai Belanja
+            </template>
           </Button>
         </div>
       </div>

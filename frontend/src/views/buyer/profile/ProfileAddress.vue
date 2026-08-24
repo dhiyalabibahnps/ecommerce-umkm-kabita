@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CODAddressModal from '@/components/cod/CODAddressModal.vue'
 import { locationService } from '@/services/locationService'
 import type { CodLocation } from '@/types'
 import Button from 'primevue/button'
@@ -6,7 +7,6 @@ import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { onMounted, ref } from 'vue'
-import AddressFormModal from './AddressFormModal.vue'
 
 const toast = useToast()
 
@@ -139,7 +139,7 @@ onMounted(loadAddresses)
     <div v-else class="py-10 text-center text-xs text-slate-500">Belum ada alamat pengiriman.</div>
   </div>
 
-  <AddressFormModal v-model:visible="showForm" :mode="formMode" :location="selectedLocation" @saved="handleSaved" />
+  <CODAddressModal v-model:visible="showForm" :mode="formMode" :cod-location="selectedLocation" @saved="handleSaved" />
   <Dialog v-model:visible="deleteDialogVisible" modal header="Hapus Alamat" :style="{ width: '90%', maxWidth: '420px' }"
     class="rounded-2xl">
     <div class="text-xs text-slate-600">

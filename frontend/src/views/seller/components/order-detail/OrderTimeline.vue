@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { formatCourierDisplay } from '@/constants/courier';
 import type { OrderStatus } from '@/types';
 import { computed } from 'vue';
-import { formatCourierDisplay } from '@/constants/courier';
 
 const props = defineProps<{
   status: OrderStatus;
@@ -172,31 +172,28 @@ const timelineItems = computed<TimelineItem[]>(() => {
   <div class="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs mb-4">
     <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
       <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Aktivitas Pesanan</h3>
-      <span class="text-[10px] text-slate-500 font-medium">Timeline Pelacakan</span>
+      <!-- <span class="text-[10px] text-slate-500 font-medium">Timeline Pelacakan</span> -->
     </div>
 
-    <div class="relative pl-6 space-y-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+    <div
+      class="relative pl-6 space-y-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
       <div v-for="(item, idx) in timelineItems" :key="idx" class="relative">
         <!-- Dot / Icon Indicator -->
-        <span
-          class="absolute -left-6 top-0 flex h-4 w-4 items-center justify-center rounded-full transition-all"
+        <span class="absolute -left-6 top-0 flex h-4 w-4 items-center justify-center rounded-full transition-all"
           :class="[
             item.done
               ? 'bg-blue-600 text-white shadow-2xs'
               : item.current
                 ? 'bg-blue-600 text-white ring-4 ring-blue-100 shadow-2xs'
                 : 'bg-slate-200 text-slate-400'
-          ]"
-        >
+          ]">
           <i v-if="item.done" class="pi pi-check text-[8px]"></i>
           <span v-else class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
         </span>
 
         <div class="flex items-start justify-between gap-2">
-          <h4
-            class="text-xs font-bold transition"
-            :class="item.done || item.current ? 'text-slate-900' : 'text-slate-400'"
-          >
+          <h4 class="text-xs font-bold transition"
+            :class="item.done || item.current ? 'text-slate-900' : 'text-slate-400'">
             {{ item.title }}
           </h4>
           <span v-if="item.time" class="text-[10px] font-mono text-slate-400 shrink-0">
@@ -208,10 +205,8 @@ const timelineItems = computed<TimelineItem[]>(() => {
           {{ item.desc }}
         </p>
 
-        <span
-          v-if="item.badge"
-          class="mt-1 inline-block font-mono text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/70 px-2 py-0.5 rounded"
-        >
+        <span v-if="item.badge"
+          class="mt-1 inline-block font-mono text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/70 px-2 py-0.5 rounded">
           Resi: {{ item.badge }}
         </span>
       </div>

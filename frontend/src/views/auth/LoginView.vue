@@ -1,7 +1,7 @@
 <template>
-  <div class="max-w-150 mx-auto bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="max-w-150 mx-auto bg-gray-50 flex flex-col justify-center py-12 sm:px-6">
 
-    <div class="mt-8 sm:mx-auto w-full">
+    <div class="sm:mx-auto w-full">
       <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <div class="mb-12">
           <h1 class="text-center text-3xl font-bold text-primary-600">Kabita</h1>

@@ -92,19 +92,8 @@ const activeAddress = computed(() => {
 
 // Modal / Dialog States Alamat
 const isAddressModalOpen = ref(false)
-const isAddNewFormOpen = ref(false)
 const showEditModal = ref(false)
 const addressModalMode = ref<'add' | 'edit'>('edit')
-
-const newAddress = ref<CodLocation>({
-  name: "",
-  address: "",
-  phone: "",
-  latitude: "",
-  longitude: "",
-  is_default: false,
-  id: 0
-})
 
 const selectAddress = (id: number) => {
   selectedAddressId.value = id
@@ -125,35 +114,7 @@ const openEditAddress = () => {
   showEditModal.value = true
 }
 
-const saveNewAddress = async () => {
-  if (!newAddress.value.name || !newAddress.value.phone || !newAddress.value.address) {
-    alert('Harap isi semua kolom alamat!')
-    return
-  }
-
-
-  await locationService.create({
-    name: newAddress.value.name,
-    address: newAddress.value.address,
-    phone: newAddress.value.phone,
-    latitude: newAddress.value.latitude,
-    longitude: newAddress.value.longitude,
-    is_default: newAddress.value.is_default
-  })
-
-  newAddress.value = {
-    id: 0,
-    name: "",
-    address: "",
-    phone: "",
-    latitude: "",
-    longitude: "",
-    is_default: false,
-  }
-  isAddNewFormOpen.value = false
-  isAddressModalOpen.value = false
-}
-
+// saveNewAddress migrated to CODAddressModal
 // Data Pengiriman & Pesanan
 const courierOptions = FLAT_SHIPPING_OPTIONS
 const defaultCourierOption = FLAT_SHIPPING_OPTIONS[0]!
@@ -576,7 +537,7 @@ onMounted(() => {
                 class="bg-white rounded p-3 border border-blue-100 flex items-center justify-between">
                 <div>
                   <span class="text-[10px] text-slate-400 uppercase font-semibold block">{{ paymentInfo.bankName
-                  }}</span>
+                    }}</span>
                   <span class="text-sm font-bold text-slate-800 tracking-wide">{{ paymentInfo.accountNumber }}</span>
                   <span class="text-[11px] text-slate-500 block mt-0.5">a.n. {{ paymentInfo.accountHolder }}</span>
                 </div>
@@ -771,7 +732,7 @@ onMounted(() => {
           <div>
             <span class="text-[10px] text-slate-400 block mb-1">Metode Pembayaran</span>
             <span class="text-xs font-bold text-slate-800 leading-tight block">{{ createdOrderData.paymentMethod
-            }}</span>
+              }}</span>
           </div>
         </div>
 

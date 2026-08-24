@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import ProgressSpinner from 'primevue/progressspinner';
 import { notificationService } from '@/services/notificationService';
 import { useAuthStore } from '@/stores/auth';
 import { useChatStore } from '@/stores/chat';
 import type { AppNotification } from '@/types';
+import ProgressSpinner from 'primevue/progressspinner';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 const props = withDefaults(
   defineProps<{
@@ -77,7 +77,7 @@ const handleNotificationClick = async (notif: AppNotification) => {
   if (!notif.is_read) {
     notif.is_read = true;
     unreadCount.value = Math.max(0, unreadCount.value - 1);
-    notificationService.markAsRead(notif.id).catch(() => {});
+    notificationService.markAsRead(notif.id).catch(() => { });
   }
 
   isOpen.value = false;
@@ -143,7 +143,7 @@ const getIcon = (type: string) => {
 };
 
 onMounted(() => {
-  if (authStore.user) {
+  if (authStore.user && localStorage.getItem('token')) {
     fetchNotifications(true);
     pollInterval = setInterval(() => {
       fetchNotifications(true);
@@ -162,90 +162,60 @@ onUnmounted(() => {
 <template>
   <div class="relative inline-block text-left">
     <!-- Bell Button -->
-    <button
-      type="button"
-      @click="toggleDropdown"
+    <button type="button" @click="toggleDropdown"
       class="relative flex items-center justify-center p-2 sm:px-2.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-      aria-label="Lihat Notifikasi"
-    >
+      aria-label="Lihat Notifikasi">
       <i class="pi pi-bell text-lg"></i>
-      <span
-        v-if="unreadCount > 0"
-        class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-bold text-white shadow-xs"
-      >
+      <span v-if="unreadCount > 0"
+        class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-bold text-white shadow-xs">
         {{ unreadCount > 99 ? '99+' : unreadCount }}
       </span>
     </button>
 
     <!-- Overlay backdrop for click-outside -->
-    <div
-      v-if="isOpen"
-      class="fixed inset-0 z-40 bg-black/5"
-      @click="closeDropdown"
-    ></div>
+    <div v-if="isOpen" class="fixed inset-0 z-40 bg-black/5" @click="closeDropdown"></div>
 
     <!-- Notification Dropdown Panel -->
-    <div
-      v-if="isOpen"
-      class="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200/80 z-50 overflow-hidden transform transition-all duration-200"
-    >
+    <div v-if="isOpen"
+      class="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200/80 z-50 overflow-hidden transform transition-all duration-200">
       <!-- Header -->
       <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
         <div class="flex items-center gap-2">
           <h3 class="font-bold text-slate-900 text-sm sm:text-base">Notifikasi</h3>
-          <span
-            v-if="unreadCount > 0"
-            class="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700"
-          >
+          <span v-if="unreadCount > 0" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
             {{ unreadCount }} Baru
           </span>
         </div>
-        <button
-          v-if="unreadCount > 0"
-          type="button"
-          @click="handleMarkAllRead"
-          class="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer"
-        >
+        <button v-if="unreadCount > 0" type="button" @click="handleMarkAllRead"
+          class="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer">
           Tandai semua dibaca
         </button>
       </div>
 
       <!-- Filter Tabs -->
       <div class="flex border-b border-slate-100 bg-white px-2 pt-1 gap-1 text-xs font-medium text-slate-600">
-        <button
-          type="button"
-          @click="activeTab = 'all'"
-          :class="[
-            'px-3 py-2 border-b-2 font-semibold transition-colors cursor-pointer',
-            activeTab === 'all'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          ]"
-        >
+        <button type="button" @click="activeTab = 'all'" :class="[
+          'px-3 py-2 border-b-2 font-semibold transition-colors cursor-pointer',
+          activeTab === 'all'
+            ? 'border-blue-600 text-blue-600'
+            : 'border-transparent text-slate-500 hover:text-slate-800'
+        ]">
           Semua
         </button>
-        <button
-          type="button"
-          @click="activeTab = 'order'"
-          :class="[
-            'px-3 py-2 border-b-2 font-semibold transition-colors cursor-pointer',
-            activeTab === 'order'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          ]"
-        >
+        <button type="button" @click="activeTab = 'order'" :class="[
+          'px-3 py-2 border-b-2 font-semibold transition-colors cursor-pointer',
+          activeTab === 'order'
+            ? 'border-blue-600 text-blue-600'
+            : 'border-transparent text-slate-500 hover:text-slate-800'
+        ]">
           Pesanan
         </button>
-        <button
-          type="button"
-          @click="activeTab = 'chat'"
-          :class="[
-            'px-3 py-2 border-b-2 font-semibold transition-colors cursor-pointer',
-            activeTab === 'chat'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          ]"
-        >
+        <button type="button" @click="activeTab = 'chat'" :class="[
+          'px-3 py-2 border-b-2 font-semibold transition-colors cursor-pointer',
+          activeTab === 'chat'
+            ? 'border-blue-600 text-blue-600'
+            : 'border-transparent text-slate-500 hover:text-slate-800'
+        ]">
           Pesan
         </button>
       </div>
@@ -257,10 +227,7 @@ onUnmounted(() => {
           <p class="text-xs mt-2">Memuat notifikasi...</p>
         </div>
 
-        <div
-          v-else-if="filteredNotifications.length === 0"
-          class="py-10 px-4 text-center text-slate-500"
-        >
+        <div v-else-if="filteredNotifications.length === 0" class="py-10 px-4 text-center text-slate-500">
           <div class="w-10 h-10 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
             <i class="pi pi-bell-slash text-lg"></i>
           </div>
@@ -268,34 +235,26 @@ onUnmounted(() => {
           <p class="text-xs text-slate-400 mt-0.5">Notifikasi baru akan muncul di sini.</p>
         </div>
 
-        <div
-          v-for="notif in filteredNotifications"
-          :key="notif.id"
-          @click="handleNotificationClick(notif)"
-          :class="[
-            'flex items-start gap-3 p-3 cursor-pointer transition-colors text-left',
-            notif.is_read ? 'bg-white hover:bg-slate-50' : 'bg-blue-50/50 hover:bg-blue-50/80'
-          ]"
-        >
+        <div v-for="notif in filteredNotifications" :key="notif.id" @click="handleNotificationClick(notif)" :class="[
+          'flex items-start gap-3 p-3 cursor-pointer transition-colors text-left',
+          notif.is_read ? 'bg-white hover:bg-slate-50' : 'bg-blue-50/50 hover:bg-blue-50/80'
+        ]">
           <!-- Icon -->
-          <div
-            :class="[
-              'w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm mt-0.5',
-              getIcon(notif.type)
-            ]"
-          >
-            <i :class="notif.type === 'chat' ? 'pi pi-comment' : notif.type === 'order' ? 'pi pi-shopping-bag' : 'pi pi-bell'"></i>
+          <div :class="[
+            'w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm mt-0.5',
+            getIcon(notif.type)
+          ]">
+            <i
+              :class="notif.type === 'chat' ? 'pi pi-comment' : notif.type === 'order' ? 'pi pi-shopping-bag' : 'pi pi-bell'"></i>
           </div>
 
           <!-- Content -->
           <div class="min-w-0 flex-1">
             <div class="flex items-center justify-between gap-1">
-              <h4
-                :class="[
-                  'text-xs leading-snug truncate',
-                  notif.is_read ? 'font-medium text-slate-800' : 'font-bold text-slate-900'
-                ]"
-              >
+              <h4 :class="[
+                'text-xs leading-snug truncate',
+                notif.is_read ? 'font-medium text-slate-800' : 'font-bold text-slate-900'
+              ]">
                 {{ notif.title }}
               </h4>
               <span class="text-[10px] text-slate-400 shrink-0">{{ notif.time_ago || 'Baru saja' }}</span>
@@ -312,20 +271,12 @@ onUnmounted(() => {
 
       <!-- Footer -->
       <div class="p-2.5 bg-slate-50 text-center border-t border-slate-100">
-        <router-link
-          v-if="effectiveRole === 'buyer'"
-          to="/profile/notifications"
-          @click="closeDropdown"
-          class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors block"
-        >
+        <router-link v-if="effectiveRole === 'buyer'" to="/profile/notifications" @click="closeDropdown"
+          class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors block">
           Lihat Semua Notifikasi
         </router-link>
-        <router-link
-          v-else
-          to="/seller/pesanan"
-          @click="closeDropdown"
-          class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors block"
-        >
+        <router-link v-else to="/seller/pesanan" @click="closeDropdown"
+          class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors block">
           Lihat Semua Pesanan
         </router-link>
       </div>

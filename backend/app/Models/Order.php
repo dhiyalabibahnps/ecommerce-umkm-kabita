@@ -65,4 +65,11 @@ class Order extends Model
   {
     return $this->hasOne(Conversation::class);
   }
+
+  public function scopeForSeller($query, int $sellerId)
+  {
+    return $query->whereHas('shop', function ($q) use ($sellerId) {
+      $q->where('seller_id', $sellerId);
+    });
+  }
 }

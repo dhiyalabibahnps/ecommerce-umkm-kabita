@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen max-w-120 mx-auto bg-gray-50 flex flex-col justify-center -my-32 sm:px-6 lg:px-8">
+  <div class="max-w-120 mx-auto bg-gray-50 flex flex-col justify-center my-10 sm:px-6 lg:px-8">
 
     <div>
       <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
@@ -96,20 +96,7 @@
 
             <div class="mt-1">
               <Password v-model="form.password" inputId="password" :feedback="false" toggleMask placeholder="••••••••"
-                unstyled :class="{ 'p-invalid': errors.password }" :pt="{
-                  root: {
-                    class: 'relative block w-full'
-                  },
-                  input: {
-                    class: 'w-full h-9 rounded-md border border-gray-300 bg-white px-3 pr-10 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
-                  },
-                  showIcon: {
-                    class: 'text-gray-400'
-                  },
-                  hideIcon: {
-                    class: 'text-gray-400'
-                  }
-                }" />
+                fluid :class="{ 'p-invalid': errors.password }" />
 
               <small v-if="errors.password" class="p-error">
                 {{ errors.password[0] }}
@@ -122,7 +109,7 @@
             <label class="block text-sm font-medium text-gray-700">
               Konfirmasi Kata Sandi
             </label>
-            <Password v-model="form.password_confirmation" :feedback="false" toggleMask placeholder="••••••••"
+            <Password v-model="form.password_confirmation" :feedback="false" toggleMask placeholder="••••••••" fluid
               class="w-full mt-1" :class="{ 'p-invalid': errors.password_confirmation }" />
             <small v-if="errors.password_confirmation" class="p-error">{{ errors.password_confirmation[0] }}</small>
           </div>
@@ -220,7 +207,7 @@ async function handleRegister() {
 
     if (response.success) {
       successMessage.value = 'Pendaftaran berhasil!';
-      
+
       // Redirect ke halaman verifikasi email setelah 1 detik
       setTimeout(() => {
         router.push({

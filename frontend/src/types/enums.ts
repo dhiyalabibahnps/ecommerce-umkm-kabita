@@ -9,11 +9,14 @@ export type UserRole = 'admin' | 'seller' | 'buyer';
 /** From App\Enums\UserStatus */
 export type UserStatus = 'active' | 'inactive' | 'suspended';
 
+/** From App\Enums\UserGender */
+export type UserGender = 'male' | 'female';
+
 /** From App\Enums\ProductStatus */
 export type ProductStatus = 'pending' | 'approved' | 'rejected' | 'active';
 
 /** From App\Enums\OrderStatus */
-export type OrderStatus = 'awaiting_verification' | 'processing' | 'packed' | 'shipped' | 'cod_meeting' | 'completed' | 'cancelled';
+export type OrderStatus = 'pending' | 'awaiting_verification' | 'processing' | 'packed' | 'shipped' | 'cod_meeting' | 'completed' | 'cancelled';
 
 /** From App\Enums\PaymentStatus */
 export type PaymentStatus = 'pending' | 'verified' | 'rejected';

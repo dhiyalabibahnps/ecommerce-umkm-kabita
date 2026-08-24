@@ -35,7 +35,7 @@ class PaymentController extends Controller
    */
   public function index(Request $request): JsonResponse
   {
-    $query = Payment::where('status', PaymentStatus::PENDING)
+    $query = Payment::query()->where('status', PaymentStatus::PENDING)
       ->with(['order.buyer', 'order.shop']);
 
     // Filter by shop_id
