@@ -88,10 +88,8 @@ const sizeClasses = computed(() => {
 </script>
 
 <template>
-  <span
-    class="inline-flex items-center rounded-full border shadow-2xs transition-colors shrink-0"
-    :class="[config.classes, sizeClasses]"
-  >
+  <span class="inline-flex items-center rounded-full border shadow-2xs transition-colors shrink-0"
+    :class="[config.classes, sizeClasses]">
     <span class="h-1.5 w-1.5 rounded-full" :class="config.dot"></span>
     <span>{{ config.label }}</span>
   </span>

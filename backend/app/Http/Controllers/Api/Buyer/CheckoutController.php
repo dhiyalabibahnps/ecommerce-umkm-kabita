@@ -125,9 +125,9 @@ class CheckoutController extends Controller
       $shippingAddress = $location->address;
     }
 
-    // Determine order status: COD + COD = PENDING, otherwise AWAITING_VERIFICATION
-    $status = ($request->input('payment_method') === 'cod' && $request->input('shipping_method') === 'cod')
-      ? OrderStatus::PENDING
+    // Determine order status: COD starts from processing, others from awaiting_verification
+    $status = $request->input('payment_method') === 'cod'
+      ? OrderStatus::PROCESSING
       : OrderStatus::AWAITING_VERIFICATION;
 
     // Create order

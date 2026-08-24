@@ -17,7 +17,10 @@ composer install
 cp .env.example .env
 php artisan key:generate
 touch database/database.sqlite
-php artisan migrate --seed
+php artisan migrate
+for dev : php artisan db:seed
+for prod : php artisan db:seed --class=KabitaProductionUsersSeeder
+php artisan db:seed --class=KabitaProductionUsersSeeder --force
 php artisan storage:link
 php artisan serve --host=127.0.0.1 --port=8000
 ```
@@ -59,7 +62,6 @@ menambahkan token dan menangani respons 401. CORS lokal dikonfigurasi melalui
 cd backend && php artisan test
 cd ../frontend && npm run lint && npm run build
 ```
-
 
 ## Panduan demo end-to-end
 

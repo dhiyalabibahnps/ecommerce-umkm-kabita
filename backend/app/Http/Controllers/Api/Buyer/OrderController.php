@@ -281,9 +281,9 @@ class OrderController extends Controller
     // Update payment status to verified
     $order->payment->update(['status' => PaymentStatus::VERIFIED]);
 
-    // Update order status based on shipping method
+    // Update order status to processing for COD orders
     $order->update([
-      'status' => $order->shipping_method === 'cod' ? OrderStatus::COD_MEETING : OrderStatus::AWAITING_VERIFICATION,
+      'status' => OrderStatus::PROCESSING,
     ]);
 
     // Load all relationships for response

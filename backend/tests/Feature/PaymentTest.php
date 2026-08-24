@@ -162,7 +162,7 @@ class PaymentTest extends TestCase
       ->post("/api/v1/orders/{$codOrder->id}/cod-confirm");
 
     $response->assertStatus(200)
-      ->assertJsonPath('data.status', 'cod_meeting');
+      ->assertJsonPath('data.status', OrderStatus::PROCESSING->value);
 
     $this->assertDatabaseHas('payments', [
       'id' => $codPayment->id,

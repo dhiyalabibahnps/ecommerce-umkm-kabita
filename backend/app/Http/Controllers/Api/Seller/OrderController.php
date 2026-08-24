@@ -222,7 +222,7 @@ class OrderController extends Controller
     $trackingNum = $request->input('tracking_number');
 
     $order->update([
-      'status' => OrderStatus::SHIPPED->value,
+      'status' => $order->shipping_method === 'cod' ? OrderStatus::COD_MEETING->value : OrderStatus::SHIPPED->value,
       'tracking_number' => $trackingNum,
       'courier' => $courierName,
     ]);
