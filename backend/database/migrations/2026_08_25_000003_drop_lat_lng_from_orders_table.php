@@ -9,7 +9,9 @@ return new class extends Migration
   public function up(): void
   {
     Schema::table('orders', function (Blueprint $table) {
-      $table->dropColumn(['latitude', 'longitude']);
+      if (Schema::hasColumn('orders', 'latitude')) {
+        $table->dropColumn(['latitude', 'longitude']);
+      }
     });
   }
 
