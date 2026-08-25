@@ -138,6 +138,32 @@ const handleCodComplete = async () => {
   }
 };
 
+const handleDeliverOrder = async () => {
+  if (!order.value) return;
+  isActionLoading.value = true;
+  try {
+    order.value = await sellerOrderService.deliver(order.value.id);
+    toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pesanan berhasil ditandai sebagai diterima.', life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Gagal', detail: getApiErrorMessage(error, 'Status pesanan gagal diperbarui.'), life: 4000 });
+  } finally {
+    isActionLoading.value = false;
+  }
+};
+
+const handleCompleteOrder = async () => {
+  if (!order.value) return;
+  isActionLoading.value = true;
+  try {
+    order.value = await sellerOrderService.complete(order.value.id);
+    toast.add({ severity: 'success', summary: 'Berhasil', detail: 'Pesanan berhasil diselesaikan.', life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Gagal', detail: getApiErrorMessage(error, 'Status pesanan gagal diperbarui.'), life: 4000 });
+  } finally {
+    isActionLoading.value = false;
+  }
+};
+
 const formatDate = (value?: string) =>
   value
     ? new Date(value).toLocaleDateString('id-ID', {
@@ -223,6 +249,16 @@ onMounted(fetchOrderDetail);
               <Button label="Konfirmasi Pengiriman" icon="pi pi-send" size="small"
                 class="bg-blue-600! border-blue-600! text-xs! rounded-lg! font-bold!" :loading="isActionLoading"
                 @click="openShipModal" />
+            </template>
+
+            <template v-else-if="order.status === 'shipped'">
+              <Button label="Tandai Diterima" icon="pi pi-check-circle" severity="success" size="small"
+                class="text-xs! rounded-lg! font-bold!" :loading="isActionLoading" @click="handleDeliverOrder" />
+            </template>
+
+            <template v-else-if="order.status === 'delivered'">
+              <Button label="Selesaikan Pesanan" icon="pi pi-check" severity="success" size="small"
+                class="text-xs! rounded-lg! font-bold!" :loading="isActionLoading" @click="handleCompleteOrder" />
             </template>
 
             <template v-else-if="order.status === 'cod_meeting'">

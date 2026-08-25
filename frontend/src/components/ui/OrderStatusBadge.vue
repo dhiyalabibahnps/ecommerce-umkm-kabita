@@ -44,6 +44,13 @@ const config = computed(() => {
         dot: 'bg-cyan-500',
         icon: 'pi pi-truck',
       };
+    case 'delivered':
+      return {
+        label: 'Diterima',
+        classes: 'bg-teal-50 text-teal-700 border-teal-200 ring-teal-500/10',
+        dot: 'bg-teal-500',
+        icon: 'pi pi-check-circle',
+      };
     case 'cod_meeting':
       return {
         label: 'Ketemuan (COD)',

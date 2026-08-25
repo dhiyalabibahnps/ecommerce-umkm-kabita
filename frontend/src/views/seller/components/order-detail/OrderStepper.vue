@@ -37,6 +37,7 @@ const steps = computed<StepItem[]>(() => {
     { key: 'dikonfirmasi', label: 'Dikonfirmasi', icon: 'pi pi-check' },
     { key: 'dikemas', label: 'Dikemas', icon: 'pi pi-box' },
     { key: 'dikirim', label: 'Dikirim', icon: 'pi pi-truck' },
+    { key: 'diterima', label: 'Diterima', icon: 'pi pi-check-circle' },
     { key: 'selesai', label: 'Selesai', icon: 'pi pi-verified' },
   ];
 });
@@ -52,10 +53,12 @@ const currentStepIndex = computed(() => {
       return 2;
     case 'shipped':
       return 3;
+    case 'delivered':
+      return props.shippingMethod === 'cod' ? 4 : 4;
     case 'cod_meeting':
       return props.shippingMethod === 'cod' ? 3 : 3;
     case 'completed':
-      return props.shippingMethod === 'cod' ? 4 : 4;
+      return props.shippingMethod === 'cod' ? 4 : 5;
     default:
       return 0;
   }

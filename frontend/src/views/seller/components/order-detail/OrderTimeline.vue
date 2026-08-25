@@ -100,10 +100,11 @@ const timelineItems = computed<TimelineItem[]>(() => {
   }
 
   // Regular / Courier Flow with Transfer
-  const isVerified = props.isVerified || ['processing', 'packed', 'shipped', 'completed'].includes(props.status);
-  const isProcessing = ['processing', 'packed', 'shipped', 'completed'].includes(props.status);
-  const isPacked = ['packed', 'shipped', 'completed'].includes(props.status);
-  const isShipped = ['shipped', 'completed'].includes(props.status);
+  const isVerified = props.isVerified || ['processing', 'packed', 'shipped', 'delivered', 'completed'].includes(props.status);
+  const isProcessing = ['processing', 'packed', 'shipped', 'delivered', 'completed'].includes(props.status);
+  const isPacked = ['packed', 'shipped', 'delivered', 'completed'].includes(props.status);
+  const isShipped = ['shipped', 'delivered', 'completed'].includes(props.status);
+  const isDelivered = ['delivered', 'completed'].includes(props.status);
   const isCompleted = props.status === 'completed';
 
   return [
@@ -156,10 +157,18 @@ const timelineItems = computed<TimelineItem[]>(() => {
       badge: isShipped && props.trackingNumber ? props.trackingNumber : undefined,
     },
     {
-      title: 'Pesanan Diterima & Selesai',
+      title: 'Diterima',
+      desc: isDelivered
+        ? 'Pesanan telah diterima oleh penjual.'
+        : 'Menunggu pesanan sampai & diterima.',
+      done: isDelivered,
+      current: props.status === 'delivered',
+    },
+    {
+      title: 'Pesanan Selesai',
       desc: isCompleted
-        ? 'Pembeli telah mengonfirmasi pesanan diterima dengan baik.'
-        : 'Menunggu pembeli menerima barang & konfirmasi selesai.',
+        ? 'Pesanan telah selesai. Transaksi berhasil.'
+        : 'Menunggu penjual menyelesaikan pesanan.',
       time: isCompleted ? formatTimelineTime(props.updatedAt) : undefined,
       done: isCompleted,
       current: isCompleted,

@@ -38,6 +38,13 @@ const alertConfig = computed(() => {
         title: props.shippingMethod === 'cod' ? 'Sedang Dikirim (COD / Ketemuan)' : 'Dikirim',
         desc: props.shippingMethod === 'cod' ? 'Pesanan sedang dalam perjalanan menuju titik temu.' : 'Paket dalam perjalanan menuju alamat pembeli.'
       };
+    case 'delivered':
+      return {
+        bg: 'bg-teal-50 border-teal-200 text-teal-800',
+        icon: 'pi pi-check-circle text-teal-600',
+        title: 'Diterima Pembeli',
+        desc: 'Pesanan telah diterima oleh penjual. Klik "Selesaikan Pesanan" untuk menyelesaikan transaksi.'
+      };
     case 'cod_meeting':
       return {
         bg: 'bg-orange-50 border-orange-200 text-orange-800',

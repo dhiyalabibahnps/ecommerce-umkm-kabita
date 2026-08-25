@@ -253,6 +253,104 @@ class OrderController extends Controller
   }
 
   /**
+   * Mark order as delivered from shipped
+   *
+   * @authenticated
+   * @response 200 body="{"success":true,"data":{},"message":"Pesanan berhasil ditandai sebagai diterima."}"
+   * @response 403 body="{"success":false,"message":"Akses ditolak. Order ini bukan milik toko Anda."}"
+   * @response 422 body="{"success":false,"message":"Hanya order dengan status dikirim yang dapat ditandai diterima."}"
+   */
+  public function deliver(Order $order): JsonResponse
+  {
+    $sellerId = Auth::id(); // @intelephense-ignore
+    if ($order->shop->seller_id !== $sellerId) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Akses ditolak. Order ini bukan milik toko Anda.',
+      ], 403);
+    }
+
+    if ($order->status !== OrderStatus::SHIPPED) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Hanya order dengan status dikirim yang dapat ditandai diterima.',
+      ], 422);
+    }
+
+    $order->update(['status' => OrderStatus::DELIVERED->value]);
+
+    if ($order->buyer_id) {
+      Notification::create([
+        'user_id' => $order->buyer_id,
+        'type' => 'order',
+        'title' => 'Pesanan Telah Diterima',
+        'message' => "Pesanan {$order->order_number} telah diterima oleh penjual. Silakan konfirmasi jika Anda sudah menerima paket.",
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'url' => "/order-detail?id={$order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
+
+    return response()->json([
+      'success' => true,
+      'data' => new OrderResource($order),
+      'message' => 'Pesanan berhasil ditandai sebagai diterima.',
+    ]);
+  }
+
+  /**
+   * Complete order from delivered
+   *
+   * @authenticated
+   * @response 200 body="{"success":true,"data":{},"message":"Pesanan berhasil diselesaikan."}"
+   * @response 403 body="{"success":false,"message":"Akses ditolak. Order ini bukan milik toko Anda."}"
+   * @response 422 body="{"success":false,"message":"Hanya order dengan status diterima yang dapat diselesaikan."}"
+   */
+  public function complete(Order $order): JsonResponse
+  {
+    $sellerId = Auth::id(); // @intelephense-ignore
+    if ($order->shop->seller_id !== $sellerId) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Akses ditolak. Order ini bukan milik toko Anda.',
+      ], 403);
+    }
+
+    if ($order->status !== OrderStatus::DELIVERED) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Hanya order dengan status diterima yang dapat diselesaikan.',
+      ], 422);
+    }
+
+    $order->update(['status' => OrderStatus::COMPLETED->value]);
+
+    if ($order->buyer_id) {
+      Notification::create([
+        'user_id' => $order->buyer_id,
+        'type' => 'order',
+        'title' => 'Pesanan Selesai',
+        'message' => "Pesanan {$order->order_number} telah selesai. Terima kasih telah berbelanja!",
+        'data' => [
+          'order_id' => $order->id,
+          'order_number' => $order->order_number,
+          'url' => "/order-detail?id={$order->id}",
+        ],
+        'is_read' => false,
+      ]);
+    }
+
+    return response()->json([
+      'success' => true,
+      'data' => new OrderResource($order),
+      'message' => 'Pesanan berhasil diselesaikan.',
+    ]);
+  }
+
+  /**
    * Confirm COD meeting from cod_meeting to completed
    *
    * @authenticated

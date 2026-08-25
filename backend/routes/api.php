@@ -194,6 +194,8 @@ Route::prefix('v1')->group(function () {
     Route::patch('/{order}/process', [\App\Http\Controllers\Api\Seller\OrderController::class, 'process'])->name('seller.orders.process');
     Route::patch('/{order}/pack', [\App\Http\Controllers\Api\Seller\OrderController::class, 'pack'])->name('seller.orders.pack');
     Route::patch('/{order}/ship', [\App\Http\Controllers\Api\Seller\OrderController::class, 'ship'])->name('seller.orders.ship');
+    Route::patch('/{order}/deliver', [\App\Http\Controllers\Api\Seller\OrderController::class, 'deliver'])->name('seller.orders.deliver');
+    Route::patch('/{order}/complete', [\App\Http\Controllers\Api\Seller\OrderController::class, 'complete'])->name('seller.orders.complete');
     Route::patch('/{order}/cod-complete', [\App\Http\Controllers\Api\Seller\OrderController::class, 'codComplete'])->name('seller.orders.cod-complete');
   });
 
