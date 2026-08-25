@@ -32,7 +32,7 @@ class ShopController extends Controller
    */
   public function pending(Request $request): JsonResponse
   {
-    $query = Shop::where('status', ShopStatus::PENDING)
+    $query = Shop::query()->where('status', ShopStatus::PENDING)
       ->with(['seller']);
 
     // Search by shop name
@@ -41,6 +41,80 @@ class ShopController extends Controller
     }
 
     // Sorting
+    match ($request->input('sort', 'newest')) {
+      'oldest' => $query->orderBy('created_at', 'asc'),
+      default => $query->orderBy('created_at', 'desc'),
+    };
+
+    $perPage = $request->input('per_page', 15);
+    $shops = $query->paginate($perPage);
+
+    return response()->json([
+      'success' => true,
+      'data' => ShopResource::collection($shops),
+      'meta' => [
+        'current_page' => $shops->currentPage(),
+        'per_page' => $shops->perPage(),
+        'total' => $shops->total(),
+        'last_page' => $shops->lastPage(),
+      ],
+    ]);
+  }
+
+  /**
+   * List verified shops
+   *
+   * @authenticated
+   * @query_param search string "Search by shop name"
+   * @query_param sort string "Sort: newest|oldest" default=newest
+   * @query_param per_page integer "Items per page" default=15
+   */
+  public function verified(Request $request): JsonResponse
+  {
+    $query = Shop::query()->where('status', ShopStatus::VERIFIED)
+      ->with(['seller']);
+
+    if ($request->filled('search')) {
+      $query->where('name', 'like', '%' . $request->search . '%');
+    }
+
+    match ($request->input('sort', 'newest')) {
+      'oldest' => $query->orderBy('created_at', 'asc'),
+      default => $query->orderBy('created_at', 'desc'),
+    };
+
+    $perPage = $request->input('per_page', 15);
+    $shops = $query->paginate($perPage);
+
+    return response()->json([
+      'success' => true,
+      'data' => ShopResource::collection($shops),
+      'meta' => [
+        'current_page' => $shops->currentPage(),
+        'per_page' => $shops->perPage(),
+        'total' => $shops->total(),
+        'last_page' => $shops->lastPage(),
+      ],
+    ]);
+  }
+
+  /**
+   * List rejected shops
+   *
+   * @authenticated
+   * @query_param search string "Search by shop name"
+   * @query_param sort string "Sort: newest|oldest" default=newest
+   * @query_param per_page integer "Items per page" default=15
+   */
+  public function rejected(Request $request): JsonResponse
+  {
+    $query = Shop::query()->where('status', ShopStatus::REJECTED)
+      ->with(['seller']);
+
+    if ($request->filled('search')) {
+      $query->where('name', 'like', '%' . $request->search . '%');
+    }
+
     match ($request->input('sort', 'newest')) {
       'oldest' => $query->orderBy('created_at', 'asc'),
       default => $query->orderBy('created_at', 'desc'),

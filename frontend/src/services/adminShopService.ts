@@ -11,6 +11,24 @@ export const adminShopService = {
     return { data: response.data.data, meta: response.data.meta };
   },
 
+  async listVerified(filters?: {
+    search?: string;
+    sort?: 'newest' | 'oldest';
+    per_page?: number;
+  }): Promise<{ data: Shop[]; meta: PaginationMeta }> {
+    const response = await apiClient.get('/shops/verified', { params: filters });
+    return { data: response.data.data, meta: response.data.meta };
+  },
+
+  async listRejected(filters?: {
+    search?: string;
+    sort?: 'newest' | 'oldest';
+    per_page?: number;
+  }): Promise<{ data: Shop[]; meta: PaginationMeta }> {
+    const response = await apiClient.get('/shops/rejected', { params: filters });
+    return { data: response.data.data, meta: response.data.meta };
+  },
+
   async verify(shopId: number): Promise<Shop> {
     const response = await apiClient.patch(`/shops/${shopId}/verify`);
     return response.data.data;

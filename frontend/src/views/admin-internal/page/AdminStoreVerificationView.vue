@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { getApiErrorMessage } from '@/services/apiError'
 import { adminShopService } from '@/services/adminShopService'
+import { getApiErrorMessage } from '@/services/apiError'
 import type { Shop } from '@/types/entities'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
@@ -35,8 +35,12 @@ const fetchShops = async () => {
   errorMessage.value = ''
 
   try {
-    const response = await adminShopService.listPending({ per_page: 100 })
-    shops.value = response.data
+    const [pending, verified, rejected] = await Promise.all([
+      adminShopService.listPending({ per_page: 100 }),
+      adminShopService.listVerified({ per_page: 100 }),
+      adminShopService.listRejected({ per_page: 100 }),
+    ])
+    shops.value = [...pending.data, ...verified.data, ...rejected.data]
   } catch (error) {
     isError.value = true
     errorMessage.value = getApiErrorMessage(error, 'Gagal memuat data verifikasi toko.')

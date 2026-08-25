@@ -138,6 +138,8 @@ Route::prefix('v1')->group(function () {
 
     // Admin Shop Verification
     Route::get('/shops/pending', [AdminShopController::class, 'pending'])->name('admin.shops.pending');
+    Route::get('/shops/verified', [AdminShopController::class, 'verified'])->name('admin.shops.verified');
+    Route::get('/shops/rejected', [AdminShopController::class, 'rejected'])->name('admin.shops.rejected');
     Route::patch('/shops/{shop}/verify', [AdminShopController::class, 'verify'])->name('admin.shops.verify');
     Route::patch('/shops/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
 
