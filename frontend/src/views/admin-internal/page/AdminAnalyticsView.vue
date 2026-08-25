@@ -15,7 +15,7 @@ import { defineAsyncComponent } from 'vue';
 const AdminAnalyticsHeader = defineAsyncComponent(() => import('../components/analytics/AdminAnalyticsHeader.vue'))
 const AdminAnalyticsStatCards = defineAsyncComponent(() => import('../components/analytics/AdminAnalyticsStatCards.vue'))
 const AdminCategoryRevenueChart = defineAsyncComponent(() => import('../components/analytics/AdminCategoryRevenueChart.vue'))
-const AdminDailySalesChart = defineAsyncComponent(() => import('../components/analytics/AdminDailySalesChart.vue'))
+const AdminSalesChart = defineAsyncComponent(() => import('../components/analytics/AdminSalesChart.vue'))
 const AdminTopProductsTable = defineAsyncComponent(() => import('../components/analytics/AdminTopProductsTable.vue'))
 const AdminTopShopsChart = defineAsyncComponent(() => import('../components/analytics/AdminTopShopsChart.vue'))
 
@@ -45,6 +45,7 @@ const topProducts = ref<TopProductItem[]>([]);
 const categoryRevenue = ref<Array<{ name: string; revenue: string }>>([])
 const topSellers = ref<Array<{ name: string; total_revenue: string }>>([])
 const sales = ref<Array<{ date: string; revenue: string }>>([])
+const salesPeriod = ref<'daily' | 'weekly' | 'monthly'>('daily')
 
 const mapTopSeller = (seller: TopSeller) => ({
   name: seller.shop?.name || seller.seller?.name || '-',
@@ -66,7 +67,7 @@ const fetchAnalyticsData = async () => {
       adminAnalyticsService.getTopProducts(10),
       adminAnalyticsService.getCategoryRevenue(10),
       adminAnalyticsService.getTopSellers(10),
-      adminAnalyticsService.getSales('monthly'),
+      adminAnalyticsService.getSales(salesPeriod.value),
     ])
     categoryRevenue.value = categories
     topSellers.value = sellers.map(mapTopSeller)
@@ -170,6 +171,11 @@ const handleDateChange = () => {
   fetchAnalyticsData();
 };
 
+const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly') => {
+  salesPeriod.value = period;
+  fetchAnalyticsData();
+};
+
 onMounted(() => {
   fetchAnalyticsData();
 });
@@ -195,7 +201,7 @@ onMounted(() => {
       <AdminTopShopsChart :rows="topSellers" />
     </div>
 
-    <AdminDailySalesChart :rows="sales" />
+    <AdminSalesChart :rows="sales" :period="salesPeriod" @update:period="handlePeriodChange" />
 
     <AdminTopProductsTable :products="topProducts" />
   </div>
