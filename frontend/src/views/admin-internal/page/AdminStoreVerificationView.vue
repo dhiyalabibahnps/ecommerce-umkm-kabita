@@ -35,12 +35,25 @@ const fetchShops = async () => {
   errorMessage.value = ''
 
   try {
-    const [pending, verified, rejected] = await Promise.all([
+    const results = await Promise.allSettled([
       adminShopService.listPending({ per_page: 100 }),
       adminShopService.listVerified({ per_page: 100 }),
       adminShopService.listRejected({ per_page: 100 }),
     ])
-    shops.value = [...pending.data, ...verified.data, ...rejected.data]
+
+    const allShops: Shop[] = []
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        allShops.push(...result.value.data)
+      }
+    }
+
+    if (allShops.length === 0 && results.every((r) => r.status === 'rejected')) {
+      isError.value = true
+      errorMessage.value = 'Gagal memuat data verifikasi toko.'
+    }
+
+    shops.value = allShops
   } catch (error) {
     isError.value = true
     errorMessage.value = getApiErrorMessage(error, 'Gagal memuat data verifikasi toko.')
