@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import OrderMapPreview from '@/components/order/OrderMapPreview.vue';
 import type { User } from '@/types';
 import Button from 'primevue/button';
 
 defineProps<{
   buyer?: User;
   shippingAddress: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }>();
 
 const emit = defineEmits<{
@@ -21,7 +24,8 @@ const emit = defineEmits<{
 
     <div class="space-y-3">
       <div class="flex items-start gap-3">
-        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 border border-blue-100 text-xs font-bold text-blue-600">
+        <div
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 border border-blue-100 text-xs font-bold text-blue-600">
           {{ (buyer?.name || '?').slice(0, 1).toUpperCase() }}
         </div>
         <div class="min-w-0 flex-1">
@@ -33,18 +37,11 @@ const emit = defineEmits<{
 
       <div class="rounded-lg bg-slate-50 p-2.5 border border-slate-100 text-xs space-y-1">
         <span class="text-[10px] font-semibold text-slate-400 block uppercase tracking-wider">Alamat Pengiriman</span>
-        <p class="text-xs text-slate-700 leading-relaxed">{{ shippingAddress || 'Alamat tidak tersedia' }}</p>
+        <OrderMapPreview :address="shippingAddress" :latitude="latitude" :longitude="longitude" height="180px" />
       </div>
 
-      <Button
-        label="Chat Pembeli"
-        icon="pi pi-comments"
-        severity="secondary"
-        outlined
-        size="small"
-        class="w-full text-xs! rounded-lg! text-blue-600! border-blue-200! hover:bg-blue-50!"
-        @click="emit('chat')"
-      />
+      <Button label="Chat Pembeli" icon="pi pi-comments" severity="secondary" outlined size="small"
+        class="w-full text-xs! rounded-lg! text-blue-600! border-blue-200! hover:bg-blue-50!" @click="emit('chat')" />
     </div>
   </div>
 </template>

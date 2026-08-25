@@ -54,7 +54,7 @@ class CartController extends Controller
    */
   private function loadCartWithRelations(Cart $cart): Cart
   {
-    return $cart->load(['items.product:id,name,slug,price,stock,status,shop_id', 'items.product.shop:id,name,slug']);
+    return $cart->load(['items.product:id,name,slug,price,stock,status,shop_id', 'items.product.images', 'items.product.shop:id,name,slug']);
   }
 
   /**
@@ -91,7 +91,7 @@ class CartController extends Controller
     $productId = $validated['product_id'];
     $quantity = $validated['quantity'];
 
-    $cartItem = CartItem::where('cart_id', $cart->id)
+    $cartItem = CartItem::query()->where('cart_id', $cart->id)
       ->where('product_id', $productId)
       ->first();
 
@@ -100,7 +100,7 @@ class CartController extends Controller
       $newQuantity = $cartItem->quantity + $quantity;
 
       // Check if new quantity exceeds stock
-      $product = Product::find($productId);
+      $product = Product::query()->find($productId);
       if ($newQuantity > $product->stock) {
         return response()->json([
           'success' => false,
@@ -244,7 +244,7 @@ class CartController extends Controller
   public function validateForCheckout(Request $request): JsonResponse
   {
     $cart = $this->getOrCreateCart();
-    $cart->load(['items.product', 'items.product.shop']);
+    $cart->load(['items.product.images', 'items.product', 'items.product.shop']);
 
     $stockStatus = $this->calculationService->checkStockAvailability($cart);
     $groupsByShop = collect($this->calculationService->groupItemsByShop($cart))

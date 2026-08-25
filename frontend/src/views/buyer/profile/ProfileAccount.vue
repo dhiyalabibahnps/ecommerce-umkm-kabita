@@ -7,9 +7,11 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
 const toast = useToast()
+const router = useRouter();
 
 const isLoading = ref(true)
 const errorMessage = ref('')
@@ -180,7 +182,10 @@ async function submit() {
         summary: 'Berhasil',
         detail: response.message || 'Profil berhasil diperbarui.',
         life: 3000,
-      })
+      });
+      setTimeout(() => {
+        router.go(0);
+      }, 1000);
     } else {
       throw new Error(response.message || 'Gagal memperbarui profil.')
     }

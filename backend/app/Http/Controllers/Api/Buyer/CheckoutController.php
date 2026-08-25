@@ -143,11 +143,10 @@ class CheckoutController extends Controller
       'payment_method' => $request->input('payment_method'),
       'status' => $status,
       'shipping_address' => $shippingAddress,
+      'location_id' => $locationId,
       'notes' => $request->input('notes'),
     ]);
-
-    // Create order items and reduce product stock
-    $this->createOrderItems($order, $cartItems);
+    is->createOrderItems($order, $cartItems);
 
     // Remove items from cart
     $cartItems->each->delete();
@@ -160,7 +159,7 @@ class CheckoutController extends Controller
     ]);
 
     // Load relationships for response and notifications
-    $order->load(['buyer', 'shop', 'items.product', 'payment']);
+    $order->load(['buyer', 'shop', 'items.product', 'payment', 'codLocation']);
 
     // Create notification for seller
     $sellerId = $order->shop?->seller_id;

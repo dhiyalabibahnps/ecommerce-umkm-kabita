@@ -30,6 +30,8 @@ class OrderResource extends JsonResource
       'payment_method' => $this->payment_method,
       'status' => $this->status,
       'shipping_address' => $this->shipping_address,
+      'latitude' => $this->codLocation?->latitude,
+      'longitude' => $this->codLocation?->longitude,
       'tracking_number' => $this->tracking_number,
       'notes' => $this->notes,
       'created_at' => $this->created_at,

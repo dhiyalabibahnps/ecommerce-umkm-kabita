@@ -40,7 +40,7 @@ class ProductResource extends JsonResource
         'name' => $this->category?->name,
         'slug' => $this->category?->slug,
       ]),
-      'images' => $this->whenLoaded('images', fn() => $this->images->map(fn($image) => [
+      'images' => $this->when($this->relationLoaded('images'), fn() => $this->images->map(fn($image) => [
         'id' => $image->id,
         'url' => $image->image_path ? (str_starts_with($image->image_path, 'http://') || str_starts_with($image->image_path, 'https://') ? $image->image_path : asset('storage/' . $image->image_path)) : null,
       ])),

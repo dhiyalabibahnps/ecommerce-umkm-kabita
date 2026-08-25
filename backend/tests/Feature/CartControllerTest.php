@@ -27,7 +27,7 @@ class CartControllerTest extends TestCase
   }
 
   /** @test */
-  public function buyer_can_view_empty_cart() : void
+  public function buyer_can_view_empty_cart(): void
   {
     $buyer = $this->actingAsBuyer();
 
@@ -63,7 +63,7 @@ class CartControllerTest extends TestCase
   }
 
   /** @test */
-  public function buyer_can_add_item_to_cart() : void
+  public function buyer_can_add_item_to_cart(): void
   {
     $buyer = $this->actingAsBuyer();
     $shop = Shop::factory()->create();
@@ -104,7 +104,15 @@ class CartControllerTest extends TestCase
                   'cart_id',
                   'product_id',
                   'quantity',
-                  'product',
+                  'product' => [
+                    'id',
+                    'name',
+                    'slug',
+                    'price',
+                    'stock',
+                    'status',
+                    'images',
+                  ],
                   'subtotal',
                   'created_at',
                   'updated_at',
@@ -127,7 +135,7 @@ class CartControllerTest extends TestCase
   }
 
   /** @test */
-  public function buyer_can_update_cart_item_quantity() : void
+  public function buyer_can_update_cart_item_quantity(): void
   {
     $buyer = $this->actingAsBuyer();
     $shop = Shop::factory()->create();
@@ -158,7 +166,7 @@ class CartControllerTest extends TestCase
   }
 
   /** @test */
-  public function buyer_can_remove_cart_item() : void
+  public function buyer_can_remove_cart_item(): void
   {
     $buyer = $this->actingAsBuyer();
     $shop = Shop::factory()->create();
@@ -187,7 +195,7 @@ class CartControllerTest extends TestCase
   }
 
   /** @test */
-  public function buyer_can_clear_cart() : void
+  public function buyer_can_clear_cart(): void
   {
     $buyer = $this->actingAsBuyer();
     $shop = Shop::factory()->create();
@@ -216,7 +224,7 @@ class CartControllerTest extends TestCase
   }
 
   /** @test */
-  public function buyer_can_validate_cart_for_checkout() : void
+  public function buyer_can_validate_cart_for_checkout(): void
   {
     $buyer = $this->actingAsBuyer();
     $shop = Shop::factory()->create();
@@ -264,7 +272,15 @@ class CartControllerTest extends TestCase
                   'cart_id',
                   'product_id',
                   'quantity',
-                  'product',
+                  'product' => [
+                    'id',
+                    'name',
+                    'slug',
+                    'price',
+                    'stock',
+                    'status',
+                    'images',
+                  ],
                   'subtotal',
                   'created_at',
                   'updated_at',

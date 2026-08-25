@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import ProgressSpinner from 'primevue/progressspinner';
 import { useToast } from 'primevue/usetoast';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import OrderStatusBadge from '@/components/ui/OrderStatusBadge.vue';
-import { FLAT_SHIPPING_OPTIONS, formatCourierDisplay, getCourierSelectOptions, resolveCourierOptionValue } from '@/constants/courier';
+import { formatCourierDisplay, getCourierSelectOptions, resolveCourierOptionValue } from '@/constants/courier';
 import { getApiErrorMessage } from '@/services/apiError';
 import { sellerOrderService } from '@/services/sellerOrderService';
 import { useChatStore } from '@/stores/chat';
 import type { Order } from '@/types';
 
 // Sub Components
+import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal.vue';
 import OrderBuyerCard from '../components/order-detail/OrderBuyerCard.vue';
 import OrderPaymentSummaryCard from '../components/order-detail/OrderPaymentSummaryCard.vue';
 import OrderProductList from '../components/order-detail/OrderProductList.vue';
@@ -23,7 +24,6 @@ import OrderStatusAlert from '../components/order-detail/OrderStatusAlert.vue';
 import OrderStepper from '../components/order-detail/OrderStepper.vue';
 import OrderTimeline from '../components/order-detail/OrderTimeline.vue';
 import OrderTransferProof from '../components/order-detail/OrderTransferProof.vue';
-import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -141,10 +141,10 @@ const handleCodComplete = async () => {
 const formatDate = (value?: string) =>
   value
     ? new Date(value).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
     : '—';
 
 const courierOptionsForSelect = computed(() => {
@@ -163,13 +163,16 @@ onMounted(fetchOrderDetail);
     </div>
 
     <!-- Error State -->
-    <div v-else-if="errorMessage || !order" class="rounded-2xl border border-rose-100 bg-white p-10 text-center shadow-2xs">
+    <div v-else-if="errorMessage || !order"
+      class="rounded-2xl border border-rose-100 bg-white p-10 text-center shadow-2xs">
       <i class="pi pi-exclamation-triangle text-3xl text-rose-500"></i>
       <h3 class="mt-3 font-bold text-slate-800">Gagal Memuat Pesanan</h3>
       <p class="mt-1 text-xs text-rose-600">{{ errorMessage || 'Pesanan tidak ditemukan.' }}</p>
       <div class="mt-5 flex justify-center gap-2">
-        <Button label="Kembali ke Pesanan" severity="secondary" outlined size="small" class="rounded-lg! text-xs!" @click="router.push('/seller/pesanan')" />
-        <Button label="Coba Lagi" icon="pi pi-refresh" size="small" class="rounded-lg! text-xs!" @click="fetchOrderDetail" />
+        <Button label="Kembali ke Pesanan" severity="secondary" outlined size="small" class="rounded-lg! text-xs!"
+          @click="router.push('/seller/pesanan')" />
+        <Button label="Coba Lagi" icon="pi pi-refresh" size="small" class="rounded-lg! text-xs!"
+          @click="fetchOrderDetail" />
       </div>
     </div>
 
@@ -177,11 +180,9 @@ onMounted(fetchOrderDetail);
     <div v-else class="space-y-4">
       <!-- Back button & Top bar -->
       <div class="flex items-center justify-between">
-        <button
-          type="button"
+        <button type="button"
           class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 transition cursor-pointer"
-          @click="router.push('/seller/pesanan')"
-        >
+          @click="router.push('/seller/pesanan')">
           <i class="pi pi-arrow-left text-[11px]"></i>
           <span>Kembali ke Daftar Pesanan</span>
         </button>
@@ -198,124 +199,74 @@ onMounted(fetchOrderDetail);
               <OrderStatusBadge :status="order.status" size="normal" role="seller" />
             </div>
             <p class="mt-1 text-xs text-slate-500">
-              Pembeli: <strong class="text-slate-800">{{ order.buyer?.name || 'Pembeli' }}</strong> • {{ formatDate(order.created_at) }}
+              Pembeli: <strong class="text-slate-800">{{ order.buyer?.name || 'Pembeli' }}</strong> • {{
+                formatDate(order.created_at) }}
             </p>
           </div>
 
           <!-- Quick Action Buttons -->
           <div class="flex flex-wrap items-center gap-2">
-            <Button
-              label="Cetak Invoice"
-              icon="pi pi-print"
-              severity="secondary"
-              outlined
-              size="small"
+            <Button label="Cetak Invoice" icon="pi pi-print" severity="secondary" outlined size="small"
               class="text-xs! rounded-lg! text-slate-700! border-slate-300! hover:bg-slate-50!"
-              @click="invoiceModalVisible = true"
-            />
-            <Button
-              label="Chat Pembeli"
-              icon="pi pi-comments"
-              severity="secondary"
-              outlined
-              size="small"
-              class="text-xs! rounded-lg! text-blue-600! border-blue-200! hover:bg-blue-50!"
-              @click="handleOpenChat"
-            />
+              @click="invoiceModalVisible = true" />
+            <Button label="Chat Pembeli" icon="pi pi-comments" severity="secondary" outlined size="small"
+              class="text-xs! rounded-lg! text-blue-600! border-blue-200! hover:bg-blue-50!" @click="handleOpenChat" />
 
             <!-- Contextual Status Actions -->
             <template v-if="order.status === 'processing'">
-              <Button
-                label="Proses Pesanan"
-                icon="pi pi-box"
-                size="small"
-                class="bg-blue-600! border-blue-600! text-xs! rounded-lg! font-bold!"
-                :loading="isActionLoading"
-                @click="handlePackOrder"
-              />
+              <Button label="Proses Pesanan" icon="pi pi-box" size="small"
+                class="bg-blue-600! border-blue-600! text-xs! rounded-lg! font-bold!" :loading="isActionLoading"
+                @click="handlePackOrder" />
             </template>
 
             <template v-else-if="order.status === 'packed'">
-              <Button
-                label="Konfirmasi Pengiriman"
-                icon="pi pi-send"
-                size="small"
-                class="bg-blue-600! border-blue-600! text-xs! rounded-lg! font-bold!"
-                :loading="isActionLoading"
-                @click="openShipModal"
-              />
+              <Button label="Konfirmasi Pengiriman" icon="pi pi-send" size="small"
+                class="bg-blue-600! border-blue-600! text-xs! rounded-lg! font-bold!" :loading="isActionLoading"
+                @click="openShipModal" />
             </template>
 
             <template v-else-if="order.status === 'cod_meeting'">
-              <Button
-                label="Selesaikan Pesanan COD"
-                icon="pi pi-check"
-                severity="success"
-                size="small"
-                class="text-xs! rounded-lg! font-bold!"
-                :loading="isActionLoading"
-                @click="handleCodComplete"
-              />
+              <Button label="Selesaikan Pesanan COD" icon="pi pi-check" severity="success" size="small"
+                class="text-xs! rounded-lg! font-bold!" :loading="isActionLoading" @click="handleCodComplete" />
             </template>
           </div>
         </div>
       </div>
 
       <!-- Stepper Component -->
-      <OrderStepper
-        :status="order.status"
-        :shippingMethod="order.shipping_method"
-        :isVerified="order.payment?.status === 'verified'"
-      />
+      <OrderStepper :status="order.status" :shippingMethod="order.shipping_method"
+        :isVerified="order.payment?.status === 'verified'" />
 
       <!-- Content Grid: Left Main + Right Sidebar -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <!-- Main Content -->
         <div class="lg:col-span-8 space-y-4">
           <OrderStatusAlert :status="order.status" :notes="order.notes" :shippingMethod="order.shipping_method" />
-          <OrderTransferProof :proofImage="order.payment?.proof_image ?? undefined" />
+          <OrderTransferProof v-if="order.shipping_method !== 'cod'"
+            :proofImage="order.payment?.proof_image ?? undefined" />
           <OrderProductList :items="order.items" :notes="order.notes" />
-          <OrderTimeline
-            :status="order.status"
-            :shippingMethod="order.shipping_method"
-            :paymentMethod="order.payment_method"
-            :isVerified="order.payment?.status === 'verified'"
-            :hasProofImage="Boolean(order.payment?.proof_image)"
-            :courier="order.courier"
-            :trackingNumber="order.tracking_number"
-            :createdAt="order.created_at"
-            :updatedAt="order.updated_at"
-          />
+          <OrderTimeline :status="order.status" :shippingMethod="order.shipping_method"
+            :paymentMethod="order.payment_method" :isVerified="order.payment?.status === 'verified'"
+            :hasProofImage="Boolean(order.payment?.proof_image)" :courier="order.courier"
+            :trackingNumber="order.tracking_number" :createdAt="order.created_at" :updatedAt="order.updated_at" />
         </div>
 
         <!-- Sidebar Info -->
         <div class="lg:col-span-4 space-y-4">
-          <OrderBuyerCard :buyer="order.buyer" :shippingAddress="order.shipping_address" @chat="handleOpenChat" />
-          <OrderShippingCard
-            :shippingMethod="order.shipping_method"
-            :courier="order.courier"
-            :trackingNumber="order.tracking_number"
-            :shippingAddress="order.shipping_address"
-            :status="order.status"
-          />
-          <OrderPaymentSummaryCard
-            :subtotal="order.subtotal"
-            :shippingCost="order.shipping_cost"
-            :totalAmount="order.total_amount"
-            :paymentMethod="order.payment_method"
-          />
+          <OrderBuyerCard :buyer="order.buyer" :shippingAddress="order.shipping_address"
+            :latitude="order.latitude ? Number(order.latitude) : null"
+            :longitude="order.longitude ? Number(order.longitude) : null" @chat="handleOpenChat" />
+          <OrderShippingCard :shippingMethod="order.shipping_method" :courier="order.courier"
+            :trackingNumber="order.tracking_number" :shippingAddress="order.shipping_address" :status="order.status" />
+          <OrderPaymentSummaryCard :subtotal="order.subtotal" :shippingCost="order.shipping_cost"
+            :totalAmount="order.total_amount" :paymentMethod="order.payment_method" />
         </div>
       </div>
     </div>
 
     <!-- Modal Konfirmasi Pengiriman & Input Resi -->
-    <Dialog
-      v-model:visible="shippingModalVisible"
-      modal
-      header="Konfirmasi Pengiriman Pesanan"
-      :style="{ width: 'min(460px, 92vw)' }"
-      class="rounded-2xl!"
-    >
+    <Dialog v-model:visible="shippingModalVisible" modal header="Konfirmasi Pengiriman Pesanan"
+      :style="{ width: 'min(460px, 92vw)' }" class="rounded-2xl!">
       <div class="space-y-4 pt-1">
         <div class="rounded-xl bg-slate-50 p-3.5 border border-slate-100 text-xs space-y-1.5">
           <div class="flex items-center justify-between">
@@ -339,10 +290,8 @@ onMounted(fetchOrderDetail);
             <label class="text-xs font-bold text-slate-700">Layanan Kurir <span class="text-rose-500">*</span></label>
             <span class="text-[10px] text-slate-400 font-medium">Otomatis terpilih 1-1 sesuai buyer</span>
           </div>
-          <select
-            v-model="courierInput"
-            class="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-blue-500 focus:outline-none"
-          >
+          <select v-model="courierInput"
+            class="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-blue-500 focus:outline-none">
             <option v-for="item in courierOptionsForSelect" :key="item.value" :value="item.value">
               {{ item.label }}
             </option>
@@ -350,40 +299,24 @@ onMounted(fetchOrderDetail);
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700">Nomor Resi Pengiriman <span class="text-rose-500">*</span></label>
-          <InputText
-            v-model="trackingNumberInput"
-            placeholder="Contoh: JNE123456789 / SPXID0987654321"
-            class="w-full text-xs! py-2.5! rounded-lg!"
-          />
+          <label class="text-xs font-bold text-slate-700">Nomor Resi Pengiriman <span
+              class="text-rose-500">*</span></label>
+          <InputText v-model="trackingNumberInput" placeholder="Contoh: JNE123456789 / SPXID0987654321"
+            class="w-full text-xs! py-2.5! rounded-lg!" />
           <p class="text-[11px] text-slate-400">Nomor resi wajib diisi agar pembeli dapat melacak paket.</p>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
-          <Button
-            label="Batal"
-            severity="secondary"
-            outlined
-            size="small"
-            class="rounded-lg! text-xs!"
-            @click="shippingModalVisible = false"
-          />
-          <Button
-            label="Kirim Pesanan"
-            icon="pi pi-send"
-            size="small"
-            class="bg-blue-600! border-blue-600! rounded-lg! text-xs! font-bold!"
-            :loading="isActionLoading"
-            @click="handleConfirmShipModal"
-          />
+          <Button label="Batal" severity="secondary" outlined size="small" class="rounded-lg! text-xs!"
+            @click="shippingModalVisible = false" />
+          <Button label="Kirim Pesanan" icon="pi pi-send" size="small"
+            class="bg-blue-600! border-blue-600! rounded-lg! text-xs! font-bold!" :loading="isActionLoading"
+            @click="handleConfirmShipModal" />
         </div>
       </div>
     </Dialog>
 
     <!-- Modal Cetak Invoice -->
-    <OrderInvoiceModal
-      v-model:visible="invoiceModalVisible"
-      :order="order"
-    />
+    <OrderInvoiceModal v-model:visible="invoiceModalVisible" :order="order" />
   </div>
 </template>

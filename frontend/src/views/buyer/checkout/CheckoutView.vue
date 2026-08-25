@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { FLAT_SHIPPING_OPTIONS, type FlatShippingOption } from '@/constants/courier'
 import CODAddressModal from '@/components/cod/CODAddressModal.vue'
+import { FLAT_SHIPPING_OPTIONS, type FlatShippingOption } from '@/constants/courier'
 import { buyerPaymentService } from '@/services/buyerPaymentService'
 import { checkoutService } from '@/services/checkoutService'
 import { locationService } from '@/services/locationService'
@@ -429,7 +429,8 @@ onMounted(() => {
             </div>
 
             <!-- Section Pengiriman -->
-            <div v-if="selectedPaymentMethod !== 'cod'" class="min-w-0 space-y-2 rounded-xl border border-blue-100 bg-blue-50/40 p-3.5">
+            <div v-if="selectedPaymentMethod !== 'cod'"
+              class="min-w-0 space-y-2 rounded-xl border border-blue-100 bg-blue-50/40 p-3.5">
               <div class="flex items-center justify-between">
                 <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                   <i class="pi pi-truck text-blue-600"></i>
@@ -440,20 +441,18 @@ onMounted(() => {
                 </span>
               </div>
 
-              <Select
-                v-model="selectedCourierKey"
-                :options="courierOptions"
-                optionValue="key"
-                class="w-full min-w-0! text-xs! bg-white! rounded-lg!"
-              >
+              <Select v-model="selectedCourierKey" :options="courierOptions" optionValue="key"
+                class="w-full min-w-0! text-xs! bg-white! rounded-lg!">
                 <template #value="slotProps">
                   <div v-if="slotProps.value" class="flex items-center justify-between w-full pr-2 text-xs">
                     <div>
                       <strong class="text-slate-800">{{ selectedCourierObj.courierName }}</strong>
-                      <span class="text-slate-500 ml-1.5">({{ selectedCourierObj.serviceCode }} - {{ selectedCourierObj.serviceName }})</span>
+                      <span class="text-slate-500 ml-1.5">({{ selectedCourierObj.serviceCode }} - {{
+                        selectedCourierObj.serviceName }})</span>
                       <span class="text-[11px] text-slate-400 ml-1.5">• {{ selectedCourierObj.etd }}</span>
                     </div>
-                    <span class="font-bold text-blue-600 shrink-0">Rp {{ selectedCourierObj.cost.toLocaleString('id-ID') }}</span>
+                    <span class="font-bold text-blue-600 shrink-0">Rp {{ selectedCourierObj.cost.toLocaleString('id-ID')
+                      }}</span>
                   </div>
                 </template>
                 <template #option="slotProps">
@@ -479,7 +478,8 @@ onMounted(() => {
               </Select>
             </div>
 
-            <div v-else class="min-w-0 space-y-1 rounded-xl border border-amber-100 bg-amber-50/50 p-3 text-xs text-amber-800">
+            <div v-else
+              class="min-w-0 space-y-1 rounded-xl border border-amber-100 bg-amber-50/50 p-3 text-xs text-amber-800">
               <div class="flex items-center gap-1.5 font-bold">
                 <i class="pi pi-map-marker text-amber-600"></i>
                 <span>Metode COD (Ketemuan Langsung)</span>
@@ -495,13 +495,9 @@ onMounted(() => {
                 <span>Catatan untuk Penjual</span>
                 <span class="text-[11px] text-slate-400 font-normal">(opsional)</span>
               </label>
-              <Textarea
-                v-model="buyerNotes"
-                placeholder="Contoh: Tolong packing bubble wrap lebih tebal, jangan dibanting..."
-                rows="2"
-                autoResize
-                class="w-full text-xs! rounded-lg! border-slate-200!"
-              />
+              <Textarea v-model="buyerNotes"
+                placeholder="Contoh: Tolong packing bubble wrap lebih tebal, jangan dibanting..." rows="2" autoResize
+                class="w-full text-xs! rounded-lg! border-slate-200!" />
             </div>
           </div>
 
@@ -537,7 +533,7 @@ onMounted(() => {
                 class="bg-white rounded p-3 border border-blue-100 flex items-center justify-between">
                 <div>
                   <span class="text-[10px] text-slate-400 uppercase font-semibold block">{{ paymentInfo.bankName
-                    }}</span>
+                  }}</span>
                   <span class="text-sm font-bold text-slate-800 tracking-wide">{{ paymentInfo.accountNumber }}</span>
                   <span class="text-[11px] text-slate-500 block mt-0.5">a.n. {{ paymentInfo.accountHolder }}</span>
                 </div>
@@ -670,7 +666,7 @@ onMounted(() => {
                   class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Utama</span>
               </span>
               <span class="mt-1 block text-xs text-slate-500">{{ address.phone }}</span>
-              <span class="mt-1 block break-words text-xs leading-5 text-slate-600">{{ address.address }}</span>
+              <span class="mt-1 block text-xs leading-5 text-slate-600">{{ address.address }}</span>
             </span>
             <i v-if="activeAddress?.id === address.id" class="pi pi-check-circle text-blue-600"></i>
           </button>
@@ -732,7 +728,7 @@ onMounted(() => {
           <div>
             <span class="text-[10px] text-slate-400 block mb-1">Metode Pembayaran</span>
             <span class="text-xs font-bold text-slate-800 leading-tight block">{{ createdOrderData.paymentMethod
-              }}</span>
+            }}</span>
           </div>
         </div>
 

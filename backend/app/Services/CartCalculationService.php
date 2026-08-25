@@ -62,7 +62,7 @@ class CartCalculationService
    */
   public function groupItemsByShop(Cart $cart): array
   {
-    $items = $this->getItemsWithProducts($cart)->load('product.shop');
+    $items = $this->getItemsWithProducts($cart)->load('product.shop', 'product.images');
 
     $grouped = $items->groupBy(fn($item) => $item->product->shop_id);
 
@@ -158,6 +158,6 @@ class CartCalculationService
    */
   protected function getItemsWithProducts(Cart $cart): Collection
   {
-    return $cart->items()->with('product')->get();
+    return $cart->items()->with('product.images')->get();
   }
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import OrderMapPreview from '@/components/order/OrderMapPreview.vue';
 import type { Order } from '@/types/entities';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
@@ -96,7 +97,9 @@ const getStatusLabel = (status?: string) => {
               order.buyer?.phone || '-' }}</p>
             <div class="pt-2 border-t border-slate-100 text-xs text-slate-600">
               <span class="text-slate-400 block text-[11px] mb-0.5">Alamat Pengiriman:</span>
-              <p class="leading-relaxed">{{ order.shipping_address || 'Jl. Jend. Sudirman No. 12, Jakarta' }}</p>
+              <OrderMapPreview :address="order.shipping_address"
+                :latitude="order.latitude ? Number(order.latitude) : null"
+                :longitude="order.longitude ? Number(order.longitude) : null" height="180px" />
             </div>
           </div>
 

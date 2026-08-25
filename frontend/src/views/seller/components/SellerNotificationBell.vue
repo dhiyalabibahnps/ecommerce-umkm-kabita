@@ -195,7 +195,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Notification List -->
-      <div class="max-h-96 overflow-y-auto divide-y divide-slate-100 overscroll-contain">
+      <div class="max-h-64 overflow-y-auto divide-y divide-slate-100 overscroll-contain">
         <div v-if="isLoading && notifications.length === 0" class="py-12 text-center text-slate-400">
           <ProgressSpinner style="width: 32px; height: 32px" strokeWidth="4" />
           <p class="text-xs mt-2">Memuat notifikasi...</p>
@@ -214,13 +214,13 @@ onUnmounted(() => {
           notif.is_read ? 'bg-white hover:bg-slate-50' : 'bg-blue-50/50 hover:bg-blue-50/80'
         ]">
           <!-- Icon -->
-          <div :class="[
+          <!-- <div :class="[
             'w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm mt-0.5',
             getIcon(notif.type)
           ]">
             <i
               :class="notif.type === 'chat' ? 'pi pi-comment' : notif.type === 'order' ? 'pi pi-shopping-bag' : 'pi pi-bell'"></i>
-          </div>
+          </div> -->
 
           <!-- Content -->
           <div class="min-w-0 flex-1">

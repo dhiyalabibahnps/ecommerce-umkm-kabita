@@ -195,6 +195,8 @@ export interface Order {
   payment_method: string;
   status: OrderStatus;
   shipping_address: string;
+  latitude?: string | null;
+  longitude?: string | null;
   tracking_number: string | null;
   notes: string | null;
   created_at: string;

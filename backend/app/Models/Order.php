@@ -27,6 +27,7 @@ class Order extends Model
     'payment_method',
     'status',
     'shipping_address',
+    'location_id',
     'tracking_number',
     'notes',
   ];
@@ -59,6 +60,11 @@ class Order extends Model
   public function payment(): HasOne
   {
     return $this->hasOne(Payment::class);
+  }
+
+  public function codLocation(): BelongsTo
+  {
+    return $this->belongsTo(CodLocation::class);
   }
 
   public function conversation(): HasOne

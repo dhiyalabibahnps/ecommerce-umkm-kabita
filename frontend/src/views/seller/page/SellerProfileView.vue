@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { getApiErrorMessage } from '@/services/apiError'
-import { sellerShopService } from '@/services/sellerShopService'
-import type { Shop } from '@/types/entities'
+import { getApiErrorMessage } from '@/services/apiError';
+import { sellerShopService } from '@/services/sellerShopService';
+import type { Shop } from '@/types/entities';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import ProgressSpinner from 'primevue/progressspinner';
 import Textarea from 'primevue/textarea';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 const toast = useToast()
+const router = useRouter()
 
 const isLoadingGet = ref(true)
 const isSubmitting = ref(false)
@@ -106,9 +108,12 @@ const handleSaveProfile = async () => {
     toast.add({
       severity: 'success',
       summary: 'Berhasil disimpan',
-      detail: 'Profil toko berhasil diperbarui.',
+      detail: 'Profil toko Anda berhasil diperbarui. Halaman akan segera dimuat ulang.',
       life: 3000,
     })
+    setTimeout(() => {
+      router.go(0);
+    }, 1000);
   } catch (error) {
     toast.add({
       severity: 'error',
@@ -178,7 +183,8 @@ const handleSaveProfile = async () => {
               <label class="block text-xs font-semibold text-slate-700 mb-2">Banner Sampul Toko</label>
               <div
                 class="relative group rounded-xl overflow-hidden border-2 border-dashed border-slate-200 bg-slate-50 hover:border-blue-400 transition-colors">
-                <div v-if="!form.banner" class="flex h-28 w-full items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100 text-slate-400">
+                <div v-if="!form.banner"
+                  class="flex h-28 w-full items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100 text-slate-400">
                   <i class="pi pi-image text-3xl"></i>
                 </div>
                 <img v-else :src="form.banner" alt="Banner Toko"
@@ -199,9 +205,10 @@ const handleSaveProfile = async () => {
                 <div
                   class="relative group w-20 h-20 rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-100 shrink-0">
                   <img v-if="form.logo" :src="form.logo" alt="Logo Toko" class="w-full h-full object-cover" />
-                  <span v-else class="text-xl font-bold text-blue-600">{{ (form.name || 'T').slice(0, 1).toUpperCase() }}</span>
+                  <span v-else class="text-xl font-bold text-blue-600">{{ (form.name || 'T').slice(0, 1).toUpperCase()
+                    }}</span>
 
-                    <button type="button" @click="triggerLogoSelect"
+                  <button type="button" @click="triggerLogoSelect"
                     class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs transition-opacity">
                     <i class="pi pi-pencil"></i>
                   </button>

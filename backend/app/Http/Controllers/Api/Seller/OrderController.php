@@ -36,7 +36,7 @@ class OrderController extends Controller
   public function index(IndexOrderRequest $request): JsonResponse
   {
     $sellerId = Auth::id(); // @intelephense-ignore
-    $query = Order::forSeller($sellerId)->with(['items.product', 'shop', 'payment', 'buyer']);
+    $query = Order::forSeller($sellerId)->with(['items.product', 'items.product.images', 'shop', 'payment', 'buyer', 'codLocation']);
 
     // Filter by status
     if ($request->filled('status')) {
@@ -92,7 +92,7 @@ class OrderController extends Controller
       ], 403);
     }
 
-    $order->load(['items.product', 'shop', 'payment', 'buyer']);
+    $order->load(['items.product', 'items.product.images', 'shop', 'payment', 'buyer', 'codLocation']);
 
     return response()->json([
       'success' => true,

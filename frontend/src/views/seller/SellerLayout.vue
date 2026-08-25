@@ -1,14 +1,13 @@
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/auth'
+import SellerNotificationBell from '@/views/seller/components/SellerNotificationBell.vue'
 import Button from 'primevue/button'
-import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import SellerNotificationBell from '@/views/seller/components/SellerNotificationBell.vue'
 
-import type { Shop } from '@/types/entities'
 import { sellerShopService } from '@/services/sellerShopService'
+import type { Shop } from '@/types/entities'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -71,11 +70,10 @@ watch(() => route.path, () => {
     <button v-if="isSidebarOpen" type="button" aria-label="Tutup menu seller"
       class="fixed inset-0 z-30 bg-slate-950/50 lg:hidden" @click="isSidebarOpen = false" />
 
-    <aside
-      :class="[
-        'fixed inset-y-0 left-0 z-40 flex h-dvh w-72 max-w-[85vw] -translate-x-full flex-col justify-between overflow-hidden border-r border-slate-200 bg-white shadow-xl transition-transform duration-200 lg:static lg:z-20 lg:w-64 lg:translate-x-0',
-        isSidebarOpen ? 'translate-x-0' : ''
-      ]">
+    <aside :class="[
+      'fixed inset-y-0 left-0 z-40 flex h-dvh w-72 max-w-[85vw] -translate-x-full flex-col justify-between overflow-hidden border-r border-slate-200 bg-white shadow-xl transition-transform duration-200 lg:static lg:z-20 lg:w-64 lg:translate-x-0',
+      isSidebarOpen ? 'translate-x-0' : ''
+    ]">
       <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <div class="p-6 text-center border-b border-slate-100">
           <div class="relative w-20 h-20 mx-auto mb-3">
@@ -123,11 +121,12 @@ watch(() => route.path, () => {
 
     <div class="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
 
-      <header class="flex min-h-20 items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4 shrink-0 z-30 sm:px-6 lg:px-8">
+      <header
+        class="flex min-h-20 items-center justify-between gap-3 border-b border-slate-200/80 bg-white px-4 shrink-0 z-30 sm:px-6 lg:px-8">
         <div>
           <div class="flex items-center gap-3">
-            <Button icon="pi pi-bars" text rounded aria-label="Buka menu seller"
-              class="lg:hidden! text-slate-700!" @click="isSidebarOpen = true" />
+            <Button icon="pi pi-bars" text rounded aria-label="Buka menu seller" class="lg:hidden! text-slate-700!"
+              @click="isSidebarOpen = true" />
             <div class="min-w-0">
               <h1 class="truncate text-lg font-bold text-slate-900 sm:text-2xl">{{ headerInfo.title }}</h1>
               <p class="hidden text-xs text-slate-500 mt-0.5 sm:block">{{ headerInfo.subtitle }}</p>
@@ -137,12 +136,6 @@ watch(() => route.path, () => {
 
         <div class="flex items-center gap-2 sm:gap-4">
           <SellerNotificationBell />
-
-          <div class="relative hidden w-72 md:block">
-            <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-            <InputText placeholder="Search system..."
-              class="w-full! pl-10! pr-4! py-2! bg-slate-50/80! border-slate-200! rounded-full! text-sm! focus:bg-white! focus:ring-2! focus:ring-blue-500/20!" />
-          </div>
 
           <div class="flex items-center gap-2 border-l border-slate-200 pl-2 sm:gap-2.5">
             <template v-if="isLoading">

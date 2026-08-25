@@ -1,5 +1,85 @@
-Demo accounts (password: password)
-admin@kabita.test | admin
-seller@kabita.test | seller verified
-seller.pending@kabita.test | seller pending
-buyer@kabita.test | buyer
+========================================
+  KABITA - PRODUCTION USER ACCOUNTS
+========================================
+
+Generated at : 23 August 2026 16:54:04
+Environment : local
+Seeder      : KabitaProductionUsersSeeder
+
+----------------------------------------
+  DEFAULT PASSWORD UNTUK SEMUA AKUN
+----------------------------------------
+Password : password
+
+Catatan :
+- Gunakan akun ini hanya untuk keperluan testing.
+- Jangan gunakan password ini di lingkungan production.
+- Setelah login, segera ganti password melalui menu profil.
+
+----------------------------------------
+  DAFTAR AKUN
+----------------------------------------
+
+Akun 1
+Nama     : Administrator Kabita
+Email    : admin@kabita.test
+Peran    : Admin
+Status   : Aktif
+Password : password
+Login URL: https://kabita.my.id/login
+
+Akun 2
+Nama     : Seller Kabita
+Email    : seller@kabita.test
+Peran    : Seller
+Status   : Aktif
+Password : password
+Login URL: https://kabita.my.id/login
+
+Akun 3
+Nama     : Seller Kabita - Real
+Email    : seller@kabita.my.id
+Peran    : Seller
+Status   : Aktif
+Password : password
+Login URL: https://kabita.my.id/login
+
+Akun 4
+Nama     : Buyer Kabita
+Email    : buyer@kabita.test
+Peran    : Buyer
+Status   : Aktif
+Password : password
+Login URL: https://kabita.my.id/login
+
+----------------------------------------
+  PENJELASAN PERAN
+----------------------------------------
+
+1. Admin
+   - Bertugas mengelola sistem Kabita.
+   - Bisa memverifikasi toko dan produk.
+   - Tidak bisa melakukan transaksi sebagai pembeli.
+
+2. Seller
+   - Bertugas menjual produk UMKM.
+   - Bisa menambah produk dan mengelola pesanan.
+   - Tidak bisa membeli produk di Kabita.
+
+3. Buyer
+   - Bertugas membeli produk UMKM.
+   - Bisa menambahkan produk ke keranjang.
+   - Tidak bisa menjual produk di Kabita.
+
+----------------------------------------
+  TIPS PENGGUNAAN
+----------------------------------------
+
+- Setelah login, ubah password melalui menu profil.
+- Jika lupa password, gunakan fitur lupa password.
+- Jangan bagikan akun ini ke orang lain.
+- Untuk reset data, jalankan seeder kembali.
+
+========================================
+  END OF FILE
+========================================
