@@ -146,7 +146,7 @@ class CheckoutController extends Controller
       'location_id' => $locationId,
       'notes' => $request->input('notes'),
     ]);
-    is->createOrderItems($order, $cartItems);
+    $this->createOrderItems($order, $cartItems);
 
     // Remove items from cart
     $cartItems->each->delete();
